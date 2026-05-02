@@ -1,5 +1,10 @@
 import type { Route } from "./+types/home";
-import { Welcome } from "../welcome/welcome";
+import { About } from "./home/About";
+import { Footer } from "./home/Footer";
+import { Features } from "./home/Features";
+import { Hero } from "./home/Hero";
+import { useLoaderData, useRouteLoaderData } from "react-router";
+
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -9,5 +14,30 @@ export function meta({}: Route.MetaArgs) {
 }
 
 export default function Home() {
-  return <Welcome />;
+  const { user } = useRouteLoaderData("root") ;
+
+
+
+  if (!user) return <p>Not logged in</p>;
+  return    <>
+      <Hero />
+      <Features />
+      <About />
+      <Footer />
+      {/* <Sponsors />
+      
+      <HowItWorks />
+      <Features />
+      <Services />
+      <Cta />
+      <Testimonials />
+      <Team />
+      <Pricing />
+      <Newsletter />
+      <FAQ />
+      
+      <ScrollToTop /> */}
+    </>;
 }
+
+

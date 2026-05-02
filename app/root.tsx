@@ -10,6 +10,21 @@ import {
 import type { Route } from "./+types/root";
 import "./app.css";
 
+import { auth } from "./lib/auth.server";
+import { Toaster } from "./components/ui/sonner";
+
+export async function loader({ request }: Route.LoaderArgs) {
+  //console.log("Root loader cookies:", request.headers.get("cookie"));
+  const session = await auth.api.getSession({
+    headers: request.headers,
+  });
+  const user = session?.user || null;
+  //console.log("Root loader session:", session);
+  //console.log("Root loader user:", user);
+  return { user };
+}
+
+
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
   {
@@ -33,6 +48,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <Links />
       </head>
       <body>
+        <Toaster richColors closeButton />
         {children}
         <ScrollRestoration />
         <Scripts />
