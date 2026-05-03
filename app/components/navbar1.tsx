@@ -1,6 +1,7 @@
 import { Book, Menu, Sunset, Trees, Zap } from "lucide-react";
 import { useRouteLoaderData } from "react-router";
 import { Link } from "react-router";
+import LOGO from "~/assets/logo_icon.svg";
 
 import {
   Accordion,
@@ -26,6 +27,7 @@ import {
 } from "~/components/ui/sheet";
 import { cn } from "~/lib/utils";
 import { UserAvatar } from "./user-avatar";
+import Logo from "./logo";
 
 interface MenuItem {
   title: string;
@@ -62,7 +64,7 @@ const Navbar1 = (
   {
     logo = {
       url: "#",
-      src: "https://deifkwefumgah.cloudfront.net/shadcnblocks/block/logos/shadcnblockscom-icon.svg",
+      src: LOGO,
       alt: "logo",
       title: "MyStudies",
     },
@@ -205,13 +207,7 @@ const Navbar1 = (
         <div className="block lg:hidden">
           <div className="flex items-center justify-between">
             {/* Logo */}
-            <a href={logo.url} className="flex items-center gap-2">
-              <img
-                src={logo.src}
-                className="max-h-8 dark:invert"
-                alt={logo.alt}
-              />
-            </a>
+            <Logo logo={logo} />
 
             <div className="flex items-center gap-2">
 
@@ -225,13 +221,7 @@ const Navbar1 = (
                 <SheetContent className="overflow-y-auto">
                   <SheetHeader>
                     <SheetTitle>
-                      <a href={logo.url} className="flex items-center gap-2">
-                        <img
-                          src={logo.src}
-                          className="max-h-8 dark:invert"
-                          alt={logo.alt}
-                        />
-                      </a>
+                     <Logo logo={logo} />
                     </SheetTitle>
                   </SheetHeader>
                   <div className="flex flex-col gap-6 p-4">

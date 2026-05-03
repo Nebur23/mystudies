@@ -4,25 +4,26 @@ import { Footer } from "./home/Footer";
 import { Features } from "./home/Features";
 import { Hero } from "./home/Hero";
 import { useLoaderData, useRouteLoaderData } from "react-router";
+import CTASection from "./home/CTA";
 
 
 export function meta({}: Route.MetaArgs) {
   return [
-    { title: "New React Router App" },
-    { name: "description", content: "Welcome to React Router!" },
+    { title: "Master Your Studies" },
+    { name: "description", content: "Improve your study habits and achieve your academic goals with our proven methods." },
   ];
 }
 
 export default function Home() {
-  const { user } = useRouteLoaderData("root") ;
+  // const { user } = useRouteLoaderData("root") ;
 
 
 
-  if (!user) return <p>Not logged in</p>;
+  // if (!user) return <p>Not logged in</p>;
   return    <>
       <Hero />
       <Features />
-      <About />
+      <CTASection />
       <Footer />
       {/* <Sponsors />
       
