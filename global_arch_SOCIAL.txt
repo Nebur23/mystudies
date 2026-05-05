@@ -1,0 +1,22 @@
+GLOBAL ARCHITECTURE VIEW
+┌─────────────────────────────────────────────────┐
+│                   FRONTEND                       │
+│  • React Router v7 (file-based routing)         │
+│  • Components: Profile, Discovery, Feed, DM     │
+│  • State: React Query + Context for social data │
+└───────────────┬─────────────────────────────────┘
+                │ HTTPS + SSE/WS
+┌───────────────▼─────────────────────────────────┐
+│               REACT ROUTER API                   │
+│  • /api/profile/*  • /api/discovery/*           │
+│  • /api/connections/* • /api/feed/*             │
+│  • Auth: Better-Auth session validation         │
+└───────────────┬─────────────────────────────────┘
+                │ Drizzle ORM
+┌───────────────▼─────────────────────────────────┐
+│               POSTGRESQL                         │
+│  • Better-Auth tables (untouched)               │
+│  • Social tables: student_profile, connections, │
+│    activities, notifications, reports           │
+│  • Optimizations: GIN indexes, materialized views│
+└─────────────────────────────────────────────────┘

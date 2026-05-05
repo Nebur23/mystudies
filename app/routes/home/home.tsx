@@ -1,10 +1,10 @@
-import type { Route } from "./+types/home";
-import { About } from "./home/About";
-import { Footer } from "./home/Footer";
-import { Features } from "./home/Features";
-import { Hero } from "./home/Hero";
+import { About } from "./About";
+import { Footer } from "./Footer";
+import { Features } from "./Features";
+import { Hero } from "./Hero";
 import { useLoaderData, useRouteLoaderData } from "react-router";
-import CTASection from "./home/CTA";
+import CTASection from "./CTA";
+import type { Route } from "./+types/home";
 
 
 export function meta({}: Route.MetaArgs) {

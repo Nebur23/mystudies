@@ -94,6 +94,7 @@ export default function SignInCard() {
                                     },
                                     onResponse: () => {
                                         setLoading(false);
+                                    toast.success("Logged in successfully!");
                                     },
                                     onError: (ctx) => {
                                         toast.error(ctx.error.message);
@@ -108,33 +109,10 @@ export default function SignInCard() {
                             "Login"
                         )}
                     </Button>
+                  
+                   
                     <Button
-                        variant="outline"
-                        className="w-full gap-2"
-                        onClick={async () => {
-                            await signIn.social({
-                                provider: "github",
-                                callbackURL: "/dashboard",
-                            });
-                        }}
-                    >
-                        <GitHubLogoIcon />
-                        Continue with GitHub
-                    </Button>
-                    <Button
-                        variant="outline"
-                        className="w-full gap-2"
-                        onClick={async () => {
-                            await signIn.social({
-                                provider: "discord",
-                                callbackURL: "/dashboard",
-                            });
-                        }}
-                    >
-                        <DiscordLogoIcon />
-                        Continue with Discord
-                    </Button>
-                    <Button
+                    type="button"
                         variant="outline"
                         className="w-full gap-2"
                         onClick={async () => {
@@ -169,28 +147,10 @@ export default function SignInCard() {
                         </svg>
                         Continue with Google
                     </Button>
-                    <Button
-                        variant="outline"
-                        className="gap-2"
-                        onClick={async () => {
-                            // await signIn.passkey({
-                            // 	callbackURL: "/dashboard",
-                            // });
-                        }}
-                    >
-                        <Key size={16} />
-                        Sign-in with Passkey
-                    </Button>
+                    
                 </div>
             </CardContent>
-            <CardFooter>
-                <div className="flex justify-center w-full border-t py-4">
-                    <p className="text-center text-xs text-neutral-500">
-                        Secured by{" "}
-                        <span className="text-orange-400">better-auth.</span>
-                    </p>
-                </div>
-            </CardFooter>
+           
         </Card>
     );
 }

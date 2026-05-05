@@ -10,18 +10,21 @@ import {
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
 import { PasswordInput } from "~/components/ui/password-input";
-import { GitHubLogoIcon } from "@radix-ui/react-icons";
 import { useState } from "react";
 import { authClient, signIn, signUp } from "~/lib/auth-client";
 import { Loader2, X } from "lucide-react";
 import { toast } from "sonner";
+import { useUploadThing } from "~/utils/uploadthing";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { Facebook } from "@hugeicons/core-free-icons";
+import { useNavigate } from "react-router";
 
 export default function SignUp() {
+    const navigate = useNavigate();
     const [firstName, setFirstName] = useState("");
     const [lastName, setLastName] = useState("");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
-    const [passwordConfirmation, setPasswordConfirmation] = useState("");
     const [image, setImage] = useState<File | null>(null);
     const [imagePreview, setImagePreview] = useState<string | null>(null);
 
@@ -38,8 +41,28 @@ export default function SignUp() {
     };
     const [loading, setLoading] = useState(false);
 
+
+
+    const { startUpload, routeConfig } = useUploadThing("imageUploader", {
+        
+        onClientUploadComplete: () => {
+           // alert("uploaded successfully!");
+           setLoading(false);
+        },
+        onUploadError: () => {
+            setLoading(false);
+            toast.error("Failed to upload image");
+            console.error("error occurred while uploading");
+        },
+        onUploadBegin: (file) => {
+            setLoading(true)
+           // console.log("upload has begun for", file);
+        },
+    });
+
     return (
-        <Card className="z-50 rounded-md rounded-t-none w-full">
+        <div className="min-h-screen md:flex items-center justify-center ">
+            <Card className="z-50 rounded-md rounded-t-none w-full max-w-lg mx-auto">
             <CardHeader>
                 <CardTitle className="text-lg md:text-xl">Sign Up</CardTitle>
                 <CardDescription className="text-xs md:text-sm">
@@ -97,18 +120,7 @@ export default function SignUp() {
                             placeholder="Password"
                         />
                     </div>
-                    <div className="grid gap-2">
-                        <Label htmlFor="password">Confirm Password</Label>
-                        <PasswordInput
-                            id="password_confirmation"
-                            value={passwordConfirmation}
-                            onChange={(e) =>
-                                setPasswordConfirmation(e.target.value)
-                            }
-                            autoComplete="new-password"
-                            placeholder="Confirm Password"
-                        />
-                    </div>
+                    
                     <div className="grid gap-2">
                         <Label htmlFor="image">Profile Image (optional)</Label>
                         <div className="flex items-end gap-4">
@@ -142,23 +154,39 @@ export default function SignUp() {
                         </div>
                     </div>
                     <Button
+                    size={"lg"}
                         type="submit"
                         className="w-full"
                         disabled={loading}
                         onClick={async () => {
+                            const uploadFiles = image ? await startUpload([image]) : null;
+                            let imageUrl = null;
+
+                            if (!uploadFiles) {
+
+                                console.log("Failed to upload images");
+                                imageUrl = null;
+                               
+                            }
+
+                            imageUrl = uploadFiles?.[0]?.ufsUrl;
+
                             await signUp.email({
                                 email,
                                 password,
                                 name: `${firstName} ${lastName}`,
-                                image: image
-                                    ? await convertImageToBase64(image)
-                                    : "",
+                                image: imageUrl as string,
+                                //</div> ? await convertImageToBase64(image)
+                                //: "",
                                 callbackURL: "/sign-in",
                                 fetchOptions: {
                                     onResponse: () => {
+                                        toast.success("Account created successfully! Please sign in.");
                                         setLoading(false);
+                                        navigate("/sign-in");
                                     },
                                     onRequest: () => {
+                                        
                                         setLoading(true);
                                     },
                                     onError: (ctx) => {
@@ -175,12 +203,13 @@ export default function SignUp() {
                         )}
                     </Button>
                     <Button
+                    size={"lg"}
                         variant="outline"
                         className="w-full gap-2"
                         onClick={async () => {
                             await authClient.signIn.social({
                                 provider: "google",
-                                callbackURL: "/dashboard",
+                                callbackURL: "/sign-in",
                                 fetchOptions: {
                                     onRequest: () => {
                                         setLoading(true);
@@ -224,7 +253,7 @@ export default function SignUp() {
                         onClick={async () => {
                             await signIn.social(
                                 {
-                                    provider: "github",
+                                    provider: "facebook",
                                     callbackURL: "/",
                                 },
                                 {
@@ -239,20 +268,14 @@ export default function SignUp() {
                         }}
                         disabled={loading}
                     >
-                        <GitHubLogoIcon />
-                        Continue with GitHub
+                        <HugeiconsIcon icon={Facebook} />
+                        Continue with Facebook
                     </Button>
                 </div>
             </CardContent>
-            <CardFooter>
-                <div className="flex justify-center w-full border-t py-4">
-                    <p className="text-center text-xs text-neutral-500">
-                        Secured by{" "}
-                        <span className="text-orange-400">better-auth.</span>
-                    </p>
-                </div>
-            </CardFooter>
+       
         </Card>
+        </div>
     );
 }
 

@@ -8,6 +8,27 @@
       "when": 1777696963140,
       "tag": "0000_married_thanos",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1777884159349,
+      "tag": "0001_studentProfile",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1777919556678,
+      "tag": "0002_AddedRoleandOnboadFieldInUserTable",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1777964985472,
+      "tag": "0003_onboard_completed_At",
+      "breakpoints": true
     }
   ]
 }

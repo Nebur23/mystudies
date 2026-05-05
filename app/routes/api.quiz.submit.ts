@@ -1,6 +1,6 @@
 import { submitQuizScore } from "~/lib/leaderboard.server";
-import type { Route } from "./+types/pratice";
 import { auth } from "~/lib/auth.server";
+import type { Route } from "./practice/+types/practice";
 
 
 

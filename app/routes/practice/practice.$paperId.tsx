@@ -1,16 +1,38 @@
-import { useState } from "react";
-import { useRevalidator } from "react-router";
+import { useState, type Key } from "react";
+import { useLoaderData, useRevalidator } from "react-router";
 import { LatexText, SolutionRenderer } from "~/components/Tex";
-import type { Route } from "./+types/pratice";
+import type { Route } from "./+types/practice.$paperId";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { Badge } from "~/components/ui/badge";
-import { questions } from "~/questions/2022/A/math/paper1";
 
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { parsePaperId } from "~/utils/paperId";
+//import questions from "~/data/questions/alevel/mathematics/2022/paper1.json"; // For testing, can be removed later
 
+export async function clientLoader({ params }: Route.LoaderArgs) {
+  const { paperId } = params;
+  
+  // paperId format: "olevel-mathematics-2023-paper1"
+  const parsed = parsePaperId(paperId);
+  if (!parsed) throw new Response("Invalid paper ID", { status: 400 });
 
+  // Lazy-load questions only when route is accessed
+  // Vite supports dynamic imports with template literals if configured
+  const responsr = await fetch(`/data/questions/${parsed.level}/${parsed.subject}/${parsed.year}/${parsed.paper}.json`);
+  
+const module = await responsr.json();
+
+  return {
+    ...parsed,
+    questions: module,
+    meta: {
+      title: `${parsed.subject} - ${parsed.year} ${parsed.paper}`,
+      description: `Practice ${parsed.level} ${parsed.subject} past paper`
+    }
+  };
+}
 
 export function meta({ }: Route.MetaArgs) {
     return [
@@ -28,7 +50,23 @@ type QuizState = {
     startTime: number;
 };
 
+interface QuestionOption {
+    text: string;
+}
+
+interface Question {
+    id: Key;
+    question: string;
+    options: QuestionOption[];
+    correctAnswer: number;
+    solution: string;
+}
+
 export default function Practice() {
+
+     const data = useLoaderData<typeof clientLoader>();
+     const { questions } = data;
+
     const revalidator = useRevalidator();
     const [quizState, setQuizState] = useState<QuizState>({
         currentQuestion: 0,
@@ -144,7 +182,7 @@ export default function Practice() {
                         
                         <div className="space-y-3">
                             <h3 className="font-semibold text-lg">Review Answers:</h3>
-                            {questions.map((q, idx) => (
+                            {questions.map((q :Question, idx: number) => (
                                 <div key={q.id} className="flex items-center justify-between p-3 bg-muted/30 rounded-lg">
                                     <span className="text-sm"><LatexText text={q.question} /></span>
                                     <Badge variant={quizState.answers[idx] === q.correctAnswer ? "default" : "destructive"}>
@@ -212,7 +250,7 @@ export default function Practice() {
 
                     {/* Options */}
                     <div className="space-y-3">
-                        {currentQ.options.map((option, index) => (
+                        {currentQ.options.map((option : string, index : number) => (
                             <Button
                                 key={index}
                                 variant="outline"

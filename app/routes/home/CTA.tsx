@@ -106,7 +106,7 @@ export const CTASection: React.FC<CTASectionProps> = ({
                     </div>
                     <div>
                       <p className="font-semibold text-slate-900">MasterYourStudies</p>
-                      <p className="text-sm text-slate-600">Career Path</p>
+                      <p className="text-sm text-slate-600">Learning Path</p>
                     </div>
                   </div>
                   

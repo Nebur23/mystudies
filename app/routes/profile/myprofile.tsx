@@ -26,13 +26,7 @@ export default function UserCard() {
 
     const session = data;
 
-    useEffect(() => {
-        if (session?.session.userAgent) {
-            setUa(new UAParser(session.session.userAgent));
-        } else {
-            setUa(undefined);
-        }
-    }, [session?.session.userAgent]);
+	console.log("Session data:", session);
 
     const [emailVerificationPending, setEmailVerificationPending] = useState<boolean>(false);
     const [isTerminating, setIsTerminating] = useState<string>();
