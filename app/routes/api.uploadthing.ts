@@ -1,8 +1,6 @@
 
 import { createRouteHandler, createUploadthing } from "uploadthing/remix";
-import { UploadThingError } from "uploadthing/server";
 import type { FileRouter } from "uploadthing/types";
-import { auth } from "~/lib/auth.server";
 
 const f = createUploadthing();
 
