@@ -252,9 +252,9 @@ function ProfileTab({ profile, user }: { profile: any; user: any }) {
       // alert("uploaded successfully!");
       setLoading(false);
     },
-    onUploadError: () => {
+    onUploadError: (ctx) => {
       setLoading(false);
-      toast.error("Failed to upload image");
+      toast.error(`Failed to upload image ${ctx.cause}`);
       console.error("error occurred while uploading");
     },
     onUploadBegin: (file) => {
@@ -285,22 +285,6 @@ function ProfileTab({ profile, user }: { profile: any; user: any }) {
   return (
     <fetcher.Form onSubmit={handleSubmit} className="space-y-6">
       {/* Avatar Placeholder */}
-      {/* <div className="flex items-center gap-4">
-        <div className="w-16 h-16 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center text-white text-2xl font-bold">
-          {profile.avatarUrl ? (
-            <img src={profile.avatarUrl} alt="" className="w-full h-full rounded-full object-cover" />
-          ) : (
-            profile.displayName.charAt(0)
-          )}
-        </div>
-        <div>
-          <p className="font-medium text-slate-900">Profile Photo</p>
-          <button type="button" className="text-sm text-purple-600 font-medium hover:underline">
-            Upload new photo
-          </button>
-           TODO: Integrate Uploadthing here 
-        </div>
-      </div> */}
 
       <div className="flex items-center gap-4">
         <div className="relative">
