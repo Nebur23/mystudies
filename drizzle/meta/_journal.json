@@ -29,6 +29,20 @@
       "when": 1777964985472,
       "tag": "0003_onboard_completed_At",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1778087817436,
+      "tag": "0004_Add_Fulltext_search",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1778088580412,
+      "tag": "0005_Add_Fulltext_search_index",
+      "breakpoints": true
     }
   ]
 }

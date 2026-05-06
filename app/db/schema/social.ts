@@ -9,7 +9,7 @@ export const studentProfile = pgTable("student_profile", {
   school: text("school"),
   location: text("location"),
   region: varchar("region", {
-    enum: ["northwest", "southwest", "littoral", "centre", "west", "adamawa", "north", "east", "south"],
+    enum: ["northwest", "southwest", "littoral", "centre", "west", "adamawa", "north", "east", "south","far_north"],
   }),
   displayName: text("display_name").notNull(),
   username: text("username").notNull().unique(),
@@ -33,7 +33,7 @@ export const studentProfile = pgTable("student_profile", {
     twitter?: string;
     linkedin?: string;
   }>(),
-  
+  searchVector: text("search_vector").notNull(),
   onboardCompletedAt: timestamp("onboard_completed_at"), // null = incomplete
   lastActiveAt: timestamp("last_active_at"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
@@ -44,11 +44,13 @@ export const studentProfile = pgTable("student_profile", {
   index("student_profile_level_region_idx").on(table.level, table.region),
   index("student_profile_school_idx").on(table.school),
   index("student_profile_subjects_gin").using("gin", table.subjects),
+  index("student_profile_search_vector_gin").using("gin", table.searchVector),
 ]);
 
 export const studentProfileRelations = relations(studentProfile, ({ one }) => ({
   user: one(user, { fields: [studentProfile.userId], references: [user.id] }),
 }));
+
 
 
 

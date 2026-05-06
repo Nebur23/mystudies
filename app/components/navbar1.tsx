@@ -139,12 +139,16 @@ const Navbar1 = (
         title: "Courses",
         url: "/courses",
       },
-      
-         {
+
+      {
         title: "Leaderboard",
         url: "/leaderboard",
       },
-    
+       {
+        title: "Find Students",
+        url: "/discover",
+      },
+
     ],
     auth = {
       login: { title: "Login", url: "/sign-in" },
@@ -215,7 +219,7 @@ const Navbar1 = (
                 <SheetContent className="overflow-y-auto">
                   <SheetHeader>
                     <SheetTitle>
-                     <Logo logo={logo} />
+                      <Logo logo={logo} />
                     </SheetTitle>
                   </SheetHeader>
                   <div className="flex flex-col gap-6 p-4">

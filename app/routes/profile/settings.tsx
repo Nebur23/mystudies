@@ -254,7 +254,7 @@ function ProfileTab({ profile, user }: { profile: any; user: any }) {
     },
     onUploadError: (ctx) => {
       setLoading(false);
-      toast.error(`Failed to upload image ${JSON.stringify(ctx.cause,null,2)}`);
+      toast.error(`Failed to upload image`);
       console.log("error occurred while uploading");
     },
     onUploadBegin: (file) => {
