@@ -5,7 +5,8 @@ import {
   User, Shield, Bell, Lock, LogOut, ChevronLeft,
   Save, AlertTriangle, CheckCircle2, Loader2,
   Laptop,
-  Upload
+  Upload,
+  X
 } from "lucide-react";
 import { requireAuth } from "~/lib/auth";
 import { calculateProfileCompletion } from "~/utils/profileCompletion";
@@ -23,6 +24,7 @@ import useSWR from "swr";
 import { UAParser } from "ua-parser-js";
 import type { UAParser as UAParsERType } from "ua-parser-js";
 import { MobileIcon } from "@radix-ui/react-icons";
+import { useUploadThing } from "~/utils/uploadthing";
 
 // ─────────────────────────────────────────────────────────────
 // LOADER
@@ -110,7 +112,7 @@ export async function action({ request }: Route.ActionArgs) {
   }
 
   if (Object.keys(updateData).length === 0) {
-    return Response.json({ success: true, message: "No changes detected" });
+    return { success: true, message: "No changes detected" };
   }
 
   await db.update(studentProfile)
@@ -224,11 +226,58 @@ function ProfileTab({ profile, user }: { profile: any; user: any }) {
     region: profile.region || "",
     subjects: profile.subjects?.join(",") || "",
   });
+  const [image, setImage] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setImage(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+  const [loading, setLoading] = useState(false);
+
+  const avatarSrc = imagePreview || profile.avatarUrl;
+
+
+
+  const { startUpload, routeConfig } = useUploadThing("imageUploader", {
+
+    onClientUploadComplete: () => {
+      // alert("uploaded successfully!");
+      setLoading(false);
+    },
+    onUploadError: () => {
+      setLoading(false);
+      toast.error("Failed to upload image");
+      console.error("error occurred while uploading");
+    },
+    onUploadBegin: (file) => {
+      setLoading(true)
+      // console.log("upload has begun for", file);
+    },
+  });
+
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    const uploadFiles = image ? await startUpload([image]) : null;
+    let imageUrl = null;
+
+    if (!uploadFiles) {
+      imageUrl = null;
+
+    }
+
+    imageUrl = uploadFiles?.[0]?.ufsUrl;
+
     fetcher.submit(
-      { section: "profile", ...formData },
+      { section: "profile", avatarUrl: imageUrl as string, ...formData },
       { method: "POST", action: "/api/profile/update" },
     );
   };
@@ -254,34 +303,50 @@ function ProfileTab({ profile, user }: { profile: any; user: any }) {
       </div> */}
 
       <div className="flex items-center gap-4">
-              <div className="relative">
-                <div className="w-20 h-20 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center text-white text-2xl font-bold overflow-hidden">
-                  {profile.avatarUrl ? (
-                    <img src={profile.avatarUrl} alt={profile.displayName} className="w-full h-full object-cover" />
-                  ) : (
-                    profile?.displayName.charAt(0)
-                  )}
-                </div>
-                <label className="absolute bottom-0 right-0 bg-white rounded-full p-1.5 shadow border border-slate-200 cursor-pointer hover:bg-slate-50">
-                  <Upload size={14} className="text-slate-600" />
-                  <input 
-                    type="file" 
-                    accept="image/*"
-                    name="avatarFile"
-                    className="hidden"
-                    // Handle upload via Uploadthing in a real implementation
-                    onChange={(e) => {
-                      // TODO: Implement Uploadthing upload
-                      console.log("File selected:", e.target.files?.[0]);
-                    }}
-                  />
-                </label>
-              </div>
-              <div>
-                <p className="text-sm font-medium text-slate-900">Profile Photo</p>
-                <p className="text-xs text-slate-500">PNG, JPG up to 2MB</p>
-              </div>
-            </div>
+        <div className="relative">
+          <div className="w-20 h-20 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center text-white text-2xl font-bold overflow-hidden">
+
+            {avatarSrc ? (
+              <img
+                src={avatarSrc}
+                alt="Profile"
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              profile?.displayName.charAt(0)
+            )}
+
+            {imagePreview && (
+              <X
+                size={16}
+                className="bg-white rounded-full text-red-500 text-lg absolute top-0 right-0 cursor-pointer hover:bg-slate-50"
+                onClick={() => {
+                  setImage(null);
+                  setImagePreview(null);
+                }}
+              />
+            )}
+          </div>
+          <label className="absolute bottom-0 right-0 bg-white rounded-full p-1.5 shadow border border-slate-200 cursor-pointer hover:bg-slate-50">
+            <Upload size={14} className="text-slate-600" />
+            <input
+              type="file"
+              accept="image/*"
+              name="avatarFile"
+              onChange={handleImageChange}
+
+              className="hidden"
+
+            />
+          </label>
+        </div>
+
+
+        <div>
+          <p className="text-sm font-medium text-slate-900">Profile Photo</p>
+          <p className="text-xs text-slate-500">PNG, JPG up to 2MB</p>
+        </div>
+      </div>
 
       <div className="space-y-4">
         <div>
@@ -363,15 +428,15 @@ function ProfileTab({ profile, user }: { profile: any; user: any }) {
 
       <button
         type="submit"
-        disabled={fetcher.state === "submitting"}
+        disabled={fetcher.state === "submitting" || loading}
         className="w-full flex items-center justify-center gap-2 bg-purple-600 text-white py-3 rounded-xl font-semibold hover:bg-purple-700 disabled:opacity-50 transition-all"
       >
-        {fetcher.state === "submitting" ? (
+        {fetcher.state === "submitting" || loading ? (
           <Loader2 size={18} className="animate-spin" />
         ) : (
           <Save size={18} />
         )}
-        {fetcher.state === "submitting" ? "Saving..." : "Save Profile"}
+        {fetcher.state === "submitting" || loading ? "Saving..." : "Save Profile"}
       </button>
 
       {fetcher.data?.success && (
@@ -407,7 +472,7 @@ function PrivacyTab({ profile }: { profile: any /*StudentProfile*/ }) {
     e.preventDefault();
     fetcher.submit(new FormData(e.target as HTMLFormElement), {
       method: "POST",
-      action: "/profile/settings"
+      action: "/api/profile/update"
     });
   };
 
@@ -431,12 +496,19 @@ function PrivacyTab({ profile }: { profile: any /*StudentProfile*/ }) {
         </div>
       ))}
 
+
+
       <button
         type="submit"
         disabled={fetcher.state === "submitting"}
-        className="w-full flex items-center justify-center gap-2 bg-purple-600 text-white py-3 rounded-xl font-semibold hover:bg-purple-700 disabled:opacity-50 transition-all mt-4"
+        className="w-full flex items-center justify-center gap-2 bg-purple-600 text-white py-3 rounded-xl font-semibold hover:bg-purple-700 disabled:opacity-50 transition-all"
       >
-        <Save size={18} /> Save Privacy Settings
+        {fetcher.state === "submitting" ? (
+          <Loader2 size={18} className="animate-spin" />
+        ) : (
+          <Save size={18} />
+        )}
+        {fetcher.state === "submitting" ? "Saving..." : "Save Privacy Settings"}
       </button>
     </fetcher.Form>
   );
@@ -477,7 +549,7 @@ function SecurityTab({ session, setEmailVerificationPending, emailVerificationPe
           <Button
             size="sm"
             variant="secondary"
-                className="flex-1 py-3 bg-purple-600 text-white rounded-xl font-semibold hover:bg-purple-700 disabled:opacity-50 active:scale-95 transition-all"
+            className="flex-1 py-3 bg-purple-600 text-white rounded-xl font-semibold hover:bg-purple-700 disabled:opacity-50 active:scale-95 transition-all"
             onClick={async () => {
               await authClient.sendVerificationEmail(
                 {
@@ -562,7 +634,7 @@ function SecurityTab({ session, setEmailVerificationPending, emailVerificationPe
         <button className="text-sm text-purple-600 font-medium hover:underline">Change Password</button>
       </div>
 
-     
+
     </div>
   );
 }

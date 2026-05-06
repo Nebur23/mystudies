@@ -19,8 +19,9 @@ import {
 } from "~/components/ui/dropdown-menu"
 import { useState } from "react";
 import { Loader2, LogOut } from "lucide-react";
-import { Link } from "react-router";
 import { useNavigate } from "react-router";
+
+
 
 export function UserAvatar() {
   const { data: session, isPending, error } = useSession();

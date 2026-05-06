@@ -143,19 +143,29 @@ export default function PublicProfile() {
         </div>
      
       
-      <div className="max-w-lg mx-auto px-4 -mt-12 relative">
+      <div className="max-w-lg mx-auto px-2 -mt-12 relative">
         {/* Profile Card */}
         <div className="bg-white rounded-2xl p-5 shadow-sm border border-slate-200">
-          <div className="flex items-start justify-between">
-            <div className="flex gap-4">
-              <div className="w-20 h-20 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center text-white text-3xl font-bold border-4 border-white overflow-hidden">
-                {profile.avatarUrl ? (
+
+          <div className=" flex items-start justify-between">
+
+            <div className="flex gap-2 ">
+              
+              
+              
+              <div className="w-1/2 sm:w-auto">
+                <div className="w-20 h-20 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center text-white text-3xl font-bold border-4 border-white overflow-hidden">
+
+                    {profile.avatarUrl ? (
                   <img src={profile.avatarUrl} alt={profile.displayName} className="w-full h-full object-cover" />
                 ) : (
-                  profile.displayName.charAt(0)
+                  profile?.displayName.charAt(0)
                 )}
+                </div>
+                
+              
               </div>
-              <div>
+              <div className="">
                 <h1 className="font-bold text-xl text-slate-900">{profile.displayName}</h1>
                 <p className="text-sm text-slate-500">@{profile.username}</p>
                 <div className="flex items-center gap-2 mt-1 flex-wrap">
@@ -181,7 +191,7 @@ export default function PublicProfile() {
               {profile.canEdit ? (
                 <Link
                   to="/profile/settings"
-                  className="flex items-center gap-1.5 px-3 py-2 bg-purple-600 text-white rounded-lg text-sm font-medium hover:bg-purple-700"
+                  className="flex items-center gap-1.5 px-3 py-2 bg-primary text-white rounded-lg text-sm font-medium hover:bg-purple-700"
                 >
                   <Edit size={14} /> Edit
                 </Link>

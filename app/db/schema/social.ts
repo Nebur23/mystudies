@@ -14,7 +14,7 @@ export const studentProfile = pgTable("student_profile", {
   displayName: text("display_name").notNull(),
   username: text("username").notNull().unique(),
   bio: text("bio"),
-  avatarUrl: text("avatar_url"),
+  avatarUrl: text("avatar_url").default("https://www.gravatar.com/avatar?d=mp&f=y"),
   coverImageUrl: text("cover_image_url"),
   subjects: jsonb("subjects").$type<string[]>().default([]),
   targetExamYear: integer("target_exam_year"),

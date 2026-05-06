@@ -14,7 +14,6 @@ export default [
     route("onboarding/profile", "routes/profile/onboarding.profile.tsx"),
     route("courses", "routes/courses.tsx"),
     route("practice", "routes/practice/practice.tsx"),
-    route("myprofile", "routes/profile/myprofile.tsx"),
     route("profile/:username", "routes/profile/profile.username.tsx"),
     route("leaderboard", "routes/leaderboard.tsx"),
      route("practice/:paperId", "routes/practice/practice.$paperId.tsx"),

@@ -7,6 +7,8 @@ import { requireAuth } from "~/lib/auth";
 import { calculateProfileCompletion, generateUsername } from "~/utils/profileCompletion";
 import { z } from "zod";
 import type { Route } from "./+types/api.profile.update";
+import { user } from "../db/schema";
+import { auth } from "~/lib/auth.server";
 
 // ─── Coercion helpers ─────────────────────────────────────────────────────────
 //
@@ -16,7 +18,7 @@ import type { Route } from "./+types/api.profile.update";
 /** "true" | "false" | "1" | "0"  →  boolean */
 const booleanFromString = z
   .union([z.boolean(), z.string()])
-  .transform((v) => v === true || v === "true" || v === "1");
+  .transform((v) => v === true || v === "true" || v === "1" || v === "on");
 
 /** "2026" | 2026  →  number */
 const numberFromString = z.union([z.number(), z.string()]).transform(Number);
@@ -33,9 +35,9 @@ const arrayFromString = z
     Array.isArray(v)
       ? v
       : v
-          .split(",")
-          .map((s) => s.trim())
-          .filter(Boolean),
+        .split(",")
+        .map((s) => s.trim())
+        .filter(Boolean),
   );
 
 // ─── Schema ───────────────────────────────────────────────────────────────────
@@ -73,23 +75,23 @@ const updateProfileSchema = z.object({
   targetExamYear: numberFromString.pipe(z.number().min(2024).max(2030)).optional(),
 
   // Privacy — all arrive as strings from FormData
-  isPublic:             booleanFromString.optional(),
-  showStats:            booleanFromString.optional(),
-  showSubjects:         booleanFromString.optional(),
-  showBadges:           booleanFromString.optional(),
-  allowDirectMessages:  booleanFromString.optional(),
-  allowFriendRequests:  booleanFromString.optional(),
+  isPublic: booleanFromString.optional(),
+  showStats: booleanFromString.optional(),
+  showSubjects: booleanFromString.optional(),
+  showBadges: booleanFromString.optional(),
+  allowDirectMessages: booleanFromString.optional(),
+  allowFriendRequests: booleanFromString.optional(),
 
   // Social
   socialLinks: z
     .object({
-      whatsapp:  z.string().url().optional().or(z.literal("")),
+      whatsapp: z.string().url().optional().or(z.literal("")),
       instagram: z.string().url().optional().or(z.literal("")),
-      tiktok:    z.string().url().optional().or(z.literal("")),
+      tiktok: z.string().url().optional().or(z.literal("")),
     })
     .optional(),
-  avatarUrl:      z.string().url().optional(),
-  coverImageUrl:  z.string().url().optional(),
+  avatarUrl: z.string().url().optional(),
+  coverImageUrl: z.string().url().optional(),
 
   // Onboarding override
   markAsComplete: z.literal("true").optional(),
@@ -120,6 +122,9 @@ export async function action({ request }: Route.ActionArgs) {
   const session = await requireAuth(request);
 
   const formData = await request.formData();
+
+ // console.log("Received form data:", Object.fromEntries(formData.entries())); // Debug log to inspect incoming data
+
   const rawData = Object.fromEntries(formData);
 
   // ── Validation ──────────────────────────────────────────────────────────────
@@ -136,6 +141,8 @@ export async function action({ request }: Route.ActionArgs) {
   }
 
   const data = validated.data;
+
+ // console.log("Validated data:", data); // Debug log to inspect validated data
 
   // ── Username uniqueness ─────────────────────────────────────────────────────
   if (data.username) {
@@ -174,10 +181,10 @@ export async function action({ request }: Route.ActionArgs) {
   await db
     .insert(studentProfile)
     .values({
-      userId:      session.user.id,
-      level:       "olevel", // safe default; overwritten by updateData if present
+      userId: session.user.id,
+      level: "olevel", // safe default; overwritten by updateData if present
       displayName: session.user.name || "Student",
-      username:    generateUsername(session.user.name || "student"),
+      username: generateUsername(session.user.name || "student"),
       ...updateData,
       createdAt: new Date(),
     })
@@ -185,6 +192,24 @@ export async function action({ request }: Route.ActionArgs) {
       target: studentProfile.userId,
       set: updateData,
     });
+
+let updatedUser = null;
+
+  if (data.avatarUrl) {
+
+   updatedUser = await auth.api.updateUser({
+      body: {
+        image: data.avatarUrl,
+        // Additional custom fields defined in your schema
+      },
+      headers: request.headers , // Requires session headers to authenticate the request
+      returnHeaders: true, // Return updated session headers if the avatar URL is part of the session data
+    });
+
+    
+  }
+
+
 
   // ── Auto-complete onboarding if threshold reached ───────────────────────────
   const updatedProfile = await db.query.studentProfile.findFirst({
@@ -208,5 +233,6 @@ export async function action({ request }: Route.ActionArgs) {
     where: eq(studentProfile.userId, session.user.id),
   });
 
-  return redirect(`/profile/${finalProfile?.username ?? "me"}`);
+
+  return redirect(`/profile/${finalProfile?.username ?? "me"}`, {headers: updatedUser?.headers }); // Pass updated session headers if available
 }

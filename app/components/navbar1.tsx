@@ -139,18 +139,12 @@ const Navbar1 = (
         title: "Courses",
         url: "/courses",
       },
-         {
-        title: "My Profile",
-        url: "/myprofile",
-      },
+      
          {
         title: "Leaderboard",
         url: "/leaderboard",
       },
-      {
-        title: "Pricing",
-        url: "#",
-      },
+    
     ],
     auth = {
       login: { title: "Login", url: "/sign-in" },
