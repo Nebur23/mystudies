@@ -18,7 +18,6 @@ function isValidRegion(v: string | null): v is Region {
     return VALID_REGIONS.includes(v as Region);
 }
 
-// ── Typed return shape — never returns a raw Response ───────────────────────
 export type SearchResult = {
     results: {
         id: string;
@@ -40,6 +39,18 @@ export type SearchResult = {
     error?: string;
 };
 
+// Reusable sql snippet — avoids repeating the trgm expression
+const trgmExpr = (q: string) => sql`
+    similarity(
+        lower(
+            coalesce(${studentProfile.displayName}, '') || ' ' ||
+            coalesce(${studentProfile.username}, '')   || ' ' ||
+            coalesce(${studentProfile.school}, '')
+        ),
+        lower(${q})
+    )
+`;
+
 export async function searchStudents({ request }: { request: Request }): Promise<SearchResult> {
     const url = new URL(request.url);
     const q = url.searchParams.get("q")?.trim() ?? "";
@@ -47,11 +58,10 @@ export async function searchStudents({ request }: { request: Request }): Promise
     const limit = 20;
     const offset = (page - 1) * limit;
 
-    const rawLevel = url.searchParams.get("level");
+    const rawLevel  = url.searchParams.get("level");
     const rawRegion = url.searchParams.get("region");
     const rawSubject = url.searchParams.get("subject")?.trim() ?? "";
 
-    // ── Validation — return error in data, not as thrown Response ───────────────
     if (rawLevel && !isValidLevel(rawLevel)) {
         return {
             results: [], total: 0, page, hasNextPage: false, query: q,
@@ -67,72 +77,65 @@ export async function searchStudents({ request }: { request: Request }): Promise
         };
     }
 
-    const level = rawLevel as Level | null;
+    const level  = rawLevel  as Level  | null;
     const region = rawRegion as Region | null;
 
-    // ── WHERE conditions ─────────────────────────────────────────────────────────
-    const conditions: any[] = [eq(studentProfile.isPublic, true)];
+    // ── WHERE conditions ────────────────────────────────────────────────────────
+    const conditions: ReturnType<typeof eq>[] = [eq(studentProfile.isPublic, true)];
 
     if (q) {
         conditions.push(
             or(
-                sql`${studentProfile.searchVector} @@ websearch_to_tsquery('english', ${q})`,
-                sql`similarity(
-                    lower(${studentProfile.displayName} || ' ' || ${studentProfile.username} || ' ' || coalesce(${studentProfile.school}, '')),
-                    lower(${q})
-                ) > 0.3`
-            )
+                // ✅ raw string "search_vector" — not studentProfile.searchVector
+                sql`search_vector @@ websearch_to_tsquery('english', unaccent(${q}))`,
+                sql`${trgmExpr(q)} > 0.3`
+            ) as any
         );
     }
 
-    if (level) conditions.push(eq(studentProfile.level, level));
+    if (level)  conditions.push(eq(studentProfile.level, level));
     if (region) conditions.push(eq(studentProfile.region, region));
 
-    // ✅ ::text cast — fixes "could not determine data type" error
     if (rawSubject) {
         conditions.push(
-            sql`${studentProfile.subjects} @> jsonb_build_array(${rawSubject}::text)`
+            sql`${studentProfile.subjects} @> jsonb_build_array(${rawSubject}::text)` as any
         );
     }
 
-    // ── Ranking ──────────────────────────────────────────────────────────────────
+    // ── Ranking expression ──────────────────────────────────────────────────────
     const rankExpr = q
         ? sql<number>`CASE
-            WHEN ${studentProfile.searchVector} @@ websearch_to_tsquery('english', ${q})
-                THEN ts_rank('{0.1, 0.2, 0.4, 1.0}', ${studentProfile.searchVector}, websearch_to_tsquery('english', ${q}))
-            ELSE similarity(
-                lower(${studentProfile.displayName} || ' ' || ${studentProfile.username} || ' ' || coalesce(${studentProfile.school}, '')),
-                lower(${q})
-            )
+            WHEN search_vector @@ websearch_to_tsquery('english', unaccent(${q}))
+                THEN ts_rank('{0.1, 0.2, 0.4, 1.0}', search_vector,
+                             websearch_to_tsquery('english', unaccent(${q}))) * 2
+            ELSE ${trgmExpr(q)}
           END`
         : sql<number>`1`;
 
     const orderExpr = q
         ? sql`CASE
-            WHEN ${studentProfile.searchVector} @@ websearch_to_tsquery('english', ${q})
-                THEN ts_rank('{0.1, 0.2, 0.4, 1.0}', ${studentProfile.searchVector}, websearch_to_tsquery('english', ${q}))
-            ELSE similarity(
-                lower(${studentProfile.displayName} || ' ' || ${studentProfile.username} || ' ' || coalesce(${studentProfile.school}, '')),
-                lower(${q})
-            )
+            WHEN search_vector @@ websearch_to_tsquery('english', unaccent(${q}))
+                THEN ts_rank('{0.1, 0.2, 0.4, 1.0}', search_vector,
+                             websearch_to_tsquery('english', unaccent(${q}))) * 2
+            ELSE ${trgmExpr(q)}
           END DESC`
         : desc(studentProfile.lastActiveAt);
 
-    // ── Queries — run count and results in parallel ──────────────────────────────
+    // ── Run count + results in parallel ─────────────────────────────────────────
     const whereClause = and(...conditions);
 
     const [results, [{ total }]] = await Promise.all([
         db.select({
-                id: studentProfile.id,
-                userId: studentProfile.userId,
+                id:          studentProfile.id,
+                userId:      studentProfile.userId,
                 displayName: studentProfile.displayName,
-                username: studentProfile.username,
-                avatarUrl: studentProfile.avatarUrl,
-                school: studentProfile.school,
-                region: studentProfile.region,
-                level: studentProfile.level,
-                subjects: studentProfile.subjects,
-                matchScore: rankExpr,
+                username:    studentProfile.username,
+                avatarUrl:   studentProfile.avatarUrl,
+                school:      studentProfile.school,
+                region:      studentProfile.region,
+                level:       studentProfile.level,
+                subjects:    studentProfile.subjects,
+                matchScore:  rankExpr,
             })
             .from(studentProfile)
             .where(whereClause)

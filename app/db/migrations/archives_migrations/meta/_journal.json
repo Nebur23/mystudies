@@ -43,6 +43,34 @@
       "when": 1778088580412,
       "tag": "0005_Add_Fulltext_search_index",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1778137409687,
+      "tag": "0006_User_Connexion",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1778517801709,
+      "tag": "0007_Feed_Activity",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1778519448881,
+      "tag": "0008_Feed_Activity_v1",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1778523570946,
+      "tag": "0009_gigantic_firelord",
+      "breakpoints": true
     }
   ]
 }

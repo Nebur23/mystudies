@@ -6,6 +6,12 @@ export default [
   route("api/uploadthing", "routes/api.uploadthing.ts"),
   route("api/profile/:username", "routes/api.profile.$username.ts"),
   route("/api/profile/update", "routes/api.profile.update.ts"),
+  route("/api/connections/action", "routes/api.connections.action.ts"),
+  route("/api/connections/mutual/:username", "routes/api.connections.mutual.$username.ts"),
+  route("/api/connections/status/:username", "routes/api.connections.status.$username.ts"),
+  route("api/feed/stream","routes/api.feed.stream.ts"),
+  route("api/feed/create","routes/api.feed.create.ts"),
+  route("api/feed/engagement","routes/api.feed.engagement.ts"),
 
 
 
@@ -19,6 +25,8 @@ export default [
     route("leaderboard", "routes/leaderboard.tsx"),
     route("practice/:paperId", "routes/practice/practice.$paperId.tsx"),
     route("discover", "routes/profile/discover.tsx"),
+    route("connections", "routes/connections.tsx"),
+    route("feed","routes/feed.tsx"),
     route("sign-in", "routes/auth/signin.tsx"),
     route("sign-up", "routes/auth/signup.tsx"),
 

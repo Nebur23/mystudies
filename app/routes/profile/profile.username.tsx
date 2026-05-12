@@ -1,5 +1,5 @@
 // app/routes/profile.$username.tsx
-import { useLoaderData, Link ,redirect} from "react-router";
+import { useLoaderData, Link, redirect } from "react-router";
 import { MapPin, School, Calendar, MessageCircle, Share2, Edit } from "lucide-react";
 // app/routes/api.profile.$username.ts
 import { eq, and } from "drizzle-orm";
@@ -7,6 +7,9 @@ import { db } from "~/db";
 import { studentProfile } from "~/db/schema/social";
 import { getSessionSafe, isProfileOwner } from "~/lib/auth";
 import type { Route } from "./+types/profile.username";
+import { ConnectButton } from "~/components/connections/ConnectButton";
+import { MutualConnections } from "~/components/connections/MutualConnections";
+import { ConnectionStatus } from "~/utils/connection.status";
 
 export async function loader({ params, request }: Route.LoaderArgs) {
   const { username } = params;
@@ -39,6 +42,8 @@ export async function loader({ params, request }: Route.LoaderArgs) {
   const session = await getSessionSafe(request);
   const isOwner = isProfileOwner(profile, session);
 
+  const connectionStatus = await ConnectionStatus({ params, request });
+
   // Privacy filter: minimal view if private and not owner
   if (!profile.isPublic && !isOwner) {
     return {
@@ -58,12 +63,14 @@ export async function loader({ params, request }: Route.LoaderArgs) {
       },
       isOwner: false,
       canEdit: false,
+      connectionStatus, // from ConnectionStatus utility
       message: "This profile is private",
     }; //satisfies Partial<ProfileLoaderData>);
   }
 
   // Full profile for owner or public profile
   // Note: Stats would be fetched from quiz_score/leaderboard tables (Phase 4)
+
   return {
     id: profile.id,
     userId: profile.userId,
@@ -98,14 +105,15 @@ export async function loader({ params, request }: Route.LoaderArgs) {
       accuracy: 0,
       currentStreak: 0,
       badges: []
-    }
-  } ;
+    },
+    connectionStatus, // from ConnectionStatus utility
+  };
 }
 
 
 export default function PublicProfile() {
   const profile = useLoaderData<typeof loader>();
-  
+
   // Handle "not found" or "private" states
   if (!profile || (!profile?.privacy?.isPublic && !profile.isOwner)) {
     return (
@@ -122,110 +130,136 @@ export default function PublicProfile() {
       </div>
     );
   }
-  
+
+
+
   return (
     <div className="min-h-screen bg-slate-50 pb-24">
       {/* Cover Image */}
-      
-        <div className="h-32 md:h-48 bg-gradient-to-r from-purple-500 to-blue-500 relative">
-         {profile.coverImageUrl && (
-          <img 
-            src={profile.coverImageUrl} 
-            alt="Cover" 
+
+      <div className="h-32 md:h-48 bg-gradient-to-r from-purple-500 to-blue-500 relative">
+        {profile.coverImageUrl && (
+          <img
+            src={profile.coverImageUrl}
+            alt="Cover"
             className="w-full h-full object-cover opacity-90"
           />
-          )}
-          {profile.canEdit && (
-            <button className="absolute bottom-3 right-3 bg-white/90 backdrop-blur px-3 py-1.5 rounded-lg text-sm font-medium text-slate-700 hover:bg-white shadow">
-              Change Cover
-            </button>
-           )}
-        </div>
-     
-      
+        )}
+        {profile.canEdit && (
+          <button className="absolute bottom-3 right-3 bg-white/90 backdrop-blur px-3 py-1.5 rounded-lg text-sm font-medium text-slate-700 hover:bg-white shadow">
+            Change Cover
+          </button>
+        )}
+      </div>
+
+
       <div className="max-w-lg mx-auto px-2 -mt-12 relative">
         {/* Profile Card */}
         <div className="bg-white rounded-2xl p-5 shadow-sm border border-slate-200">
 
-          <div className=" flex items-start justify-between">
+          <div className="flex flex-col">
 
-            <div className="flex gap-2 ">
-              
-              
-              
-              <div className="w-1/2 sm:w-auto">
-                <div className="w-20 h-20 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center text-white text-3xl font-bold border-4 border-white overflow-hidden">
-
-                    {profile.avatarUrl ? (
-                  <img src={profile.avatarUrl} alt={profile.displayName} className="w-full h-full object-cover" />
-                ) : (
-                  profile?.displayName.charAt(0)
-                )}
-                </div>
-                
-              
-              </div>
+            {/* profile image */}
+            <div className="flex items-center gap-4 mb-3">
               <div className="">
+                <div className="w-20 h-20 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center text-white text-3xl font-bold border-4 border-slate-200 overflow-hidden">
+
+                  {profile.avatarUrl ? (
+                    <img src={profile.avatarUrl} alt={profile.displayName} className="w-full h-full object-cover" />
+                  ) : (
+                    profile?.displayName.charAt(0)
+                  )}
+                </div>
+
+
+              </div>
+              <div >
                 <h1 className="font-bold text-xl text-slate-900">{profile.displayName}</h1>
                 <p className="text-sm text-slate-500">@{profile.username}</p>
-                <div className="flex items-center gap-2 mt-1 flex-wrap">
-                  <span className="px-2 py-0.5 bg-purple-100 text-purple-700 rounded-full text-xs font-medium">
-                    {profile.level === "olevel" ? "O-Level" : "A-Level"}
-                  </span>
-                  {profile.school && (
-                    <span className="flex items-center gap-1 text-xs text-slate-600">
-                      <School size={12} /> {profile.school}
-                    </span>
-                  )}
-                  {profile.region && (
-                    <span className="flex items-center gap-1 text-xs text-slate-600 capitalize">
-                      <MapPin size={12} /> {profile.region.replace('_', ' ')}
-                    </span>
-                  )}
-                </div>
+
               </div>
             </div>
-            
+
             {/* Action Buttons */}
-            <div className="flex gap-2">
+            <div className="">
               {profile.canEdit ? (
                 <Link
                   to="/profile/settings"
-                  className="flex items-center gap-1.5 px-3 py-2 bg-primary text-white rounded-lg text-sm font-medium hover:bg-purple-700"
+                  className="flex items-center w-22 gap-1.5 px-3 py-2 bg-primary text-white rounded-lg text-sm font-medium hover:bg-purple-700"
                 >
                   <Edit size={14} /> Edit
                 </Link>
               ) : (
-                <>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <ConnectButton
+                    targetUsername={profile.username}
+                    isOwner={profile.isOwner}
+                    targetUserId={profile.userId as string}
+                    initialStatus={profile.connectionStatus as {
+                      status: "none" | "pending" | "accepted" | "blocked" | "rejected";
+                      canConnect: boolean;
+                      targetUserId: string;
+                      direction: "incoming" | "outgoing" | null; 
+                    }} // from loader
+                    // canConnect={profile.privacy?.allowFriendRequests !== false}
+                    onStatusChange={(newStatus) => {
+                      // Optionally refetch mutual connections
+                    }}
+                  />
                   {profile.privacy?.allowDirectMessages && (
                     <button className="p-2 hover:bg-slate-100 rounded-full" aria-label="Message">
                       <MessageCircle size={18} className="text-slate-600" />
                     </button>
                   )}
+
+
                   <button className="p-2 hover:bg-slate-100 rounded-full" aria-label="Share">
                     <Share2 size={18} className="text-slate-600" />
                   </button>
-                </>
-              )}
+                </div>
+
+              )
+
+              }
             </div>
           </div>
-          
+
+          {/* personal info */}
+
+          <div className="flex items-center gap-2 mt-5 flex-wrap">
+            <span className="px-2 py-0.5 bg-purple-100 text-purple-700 rounded-full text-xs font-medium">
+              {profile.level === "olevel" ? "O-Level" : "A-Level"}
+            </span>
+            {profile.school && (
+              <span className="flex items-center gap-1 text-xs text-slate-600">
+                <School size={12} /> {profile.school}
+              </span>
+            )}
+            {profile.region && (
+              <span className="flex items-center gap-1 text-xs text-slate-600 capitalize">
+                <MapPin size={12} /> {profile.region.replace('_', ' ')}
+              </span>
+            )}
+          </div>
+
           {profile.bio && (
             <p className="mt-4 text-sm text-slate-700 leading-relaxed">{profile.bio}</p>
           )}
-          
+
+          <MutualConnections targetUsername={profile.username} />
+
           {profile.location && (
             <div className="flex items-center gap-1.5 mt-3 text-xs text-slate-600">
               <MapPin size={14} /> {profile.location}
             </div>
           )}
-          
+
           {/* Join Date */}
           <div className="flex items-center gap-1.5 mt-2 text-xs text-slate-500">
             <Calendar size={14} /> Joined {profile.joinDate}
           </div>
         </div>
-        
+
         {/* Stats Section (Privacy-Aware) */}
         {profile.privacy?.showStats && profile.stats && (
           <div className="grid grid-cols-3 gap-3 mt-4">
@@ -234,7 +268,7 @@ export default function PublicProfile() {
             <StatCard label="Streak" value={`${profile.stats.currentStreak}d`} />
           </div>
         )}
-        
+
         {/* Subjects Section (Privacy-Aware) */}
         {profile.privacy?.showSubjects && profile.subjects && profile.subjects?.length > 0 && (
           <div className="bg-white rounded-2xl p-5 shadow-sm border border-slate-200 mt-4">
@@ -248,11 +282,11 @@ export default function PublicProfile() {
             </div>
           </div>
         )}
-        
+
         {/* Placeholder for future features */}
         <div className="mt-6 text-center text-sm text-slate-500 p-4 bg-slate-50 rounded-xl border border-slate-200">
-          {profile.isOwner 
-            ? "🎉 Profile complete! Next: Connect with study partners →" 
+          {profile.isOwner
+            ? "🎉 Profile complete! Next: Connect with study partners →"
             : "More coming soon: study activity, badges, and connections 👋"
           }
         </div>

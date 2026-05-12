@@ -7,7 +7,7 @@ export * from "./social";
 import { relations } from "drizzle-orm";
 import { user } from "./auth";
 import { quizScore, leaderboardRanking } from "./quiz";
-import { studentProfile } from "./social";
+import { activityComment, activityLike, studentProfile, studyActivity, userConnection } from "./social";
 
 export const userRelations = relations(user, ({ one, many }) => ({
   sessions: many(session),
@@ -15,7 +15,14 @@ export const userRelations = relations(user, ({ one, many }) => ({
   quizScores: many(quizScore),
   leaderboardRanking: many(leaderboardRanking),
   studentProfile: one(studentProfile),
+  connectionsAsFollower: many(userConnection, { relationName: "follower" }),
+  connectionsAsFollowing: many(userConnection, { relationName: "following" }),
+   activities: many(studyActivity),
+  likedActivities: many(activityLike),
+  comments: many(activityComment),
 }));
+
+
 
 // Need to import these for userRelations above
 import { session, account } from "./auth";

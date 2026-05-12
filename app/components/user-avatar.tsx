@@ -61,6 +61,11 @@ export function UserAvatar() {
             </Link>
             
             </DropdownMenuItem> */}
+
+           <DropdownMenuItem onClick={() => navigate("/connections")}>
+              Connections
+          </DropdownMenuItem>
+
           <DropdownMenuItem onClick={() => navigate("/profile/settings")}>
               Settings
           </DropdownMenuItem>

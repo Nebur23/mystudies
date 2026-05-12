@@ -7,8 +7,9 @@ export const user = pgTable("user", {
   email: text("email").notNull().unique(),
   emailVerified: boolean("email_verified").default(false).notNull(),
   image: text("image"),
-  onboardingCompleted : boolean("onboarding_completed").default(false).notNull(),
+  //onboardingCompleted : boolean("onboarding_completed").default(false).notNull(),
   role: text("role").default("student").notNull(),
+    //type: text("type")  student , creator, school_admin, organization_admin,
   createdAt: timestamp("created_at").notNull(),
   updatedAt: timestamp("updated_at").$onUpdate(() => new Date()).notNull(),
 });

@@ -148,6 +148,10 @@ const Navbar1 = (
         title: "Find Students",
         url: "/discover",
       },
+       {
+        title: "Posts",
+        url: "/feed",
+      },
 
     ],
     auth = {
