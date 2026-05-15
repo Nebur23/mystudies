@@ -5,10 +5,10 @@ import { userNotification } from "../db/schema";
 import { and, eq, sql } from "drizzle-orm";
 import type { Route } from "./+types/appLayout";
 import { useLoaderData } from "react-router";
-import { requireAuth } from "~/lib/auth";
+import { getSessionSafe } from "~/lib/auth";
 
 export async function loader({ request }: Route.LoaderArgs) {
-  const session = await requireAuth(request);
+  const session = await getSessionSafe(request);
 
   if (!session?.user) {
     return { unreadCount : 0 }
