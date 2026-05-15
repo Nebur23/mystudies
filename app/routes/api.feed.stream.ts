@@ -1,4 +1,4 @@
-import { getSessionSafe } from "~/lib/auth";
+import { getSessionSafe } from "~/lib/auth.server";
 import { checkActivityVisibility } from "~/utils/feed/get";
 import { subscribe, unsubscribe } from "~/utils/feed/sse";
 import { db } from "~/db";

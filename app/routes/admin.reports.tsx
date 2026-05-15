@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useLoaderData, useFetcher } from "react-router";
 import { Filter, Check, X, Eye, Flag, AlertTriangle } from "lucide-react";
-import { requireAuth } from "~/lib/auth";
+import { requireAuth } from "~/lib/auth.server";
 import { db } from "~/db";
 import { report, studentProfile } from "~/db/schema/social";
 import { sql } from "drizzle-orm";

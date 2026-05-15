@@ -6,7 +6,7 @@ import { CourseNotes } from "~/components/courses/CourseNotes";
 import type { Route } from "./+types/courses.$slug";
 import { db } from "~/db";
 import { course, courseModule, courseLesson, userLessonProgress } from "~/db/schema/courses";
-import { requireAuth } from "~/lib/auth";
+import { requireAuth } from "~/lib/auth.server";
 import { eq, asc, and, inArray } from "drizzle-orm";
 import { YouTubePlayer } from "~/components/courses/YouTubePlayer";
 

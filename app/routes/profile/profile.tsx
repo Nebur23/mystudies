@@ -6,7 +6,7 @@ import { CompleteProfileBanner } from "~/components/CompleteProfileBanner";
 import { ProfileEditor } from "~/components/ProfileEditor";
 import { db } from "~/db";
 import { studentProfile } from "~/db/schema";
-import { requireAuth } from "~/lib/auth";
+import { requireAuth } from "~/lib/auth.server";
 import type { ProfileLoaderData } from "~/types/profile";
 import type { Route } from "./+types/profile";
 

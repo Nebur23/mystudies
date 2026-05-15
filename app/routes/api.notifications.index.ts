@@ -1,7 +1,7 @@
 import { eq, and, desc, sql, isNull } from "drizzle-orm";
 import { db } from "~/db";
 import { userNotification } from "~/db/schema/social";
-import { requireAuth } from "~/lib/auth";
+import { requireAuth } from "~/lib/auth.server";
 import type { Route } from "./+types/api.notifications.index";
 
 export async function loader({ request }: Route.LoaderArgs) {

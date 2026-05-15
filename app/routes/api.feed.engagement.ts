@@ -1,7 +1,7 @@
 import { eq, and, sql, isNull } from "drizzle-orm";
 import { db } from "~/db";
 import { activityLike, activityComment, studyActivity, studentProfile } from "~/db/schema/social";
-import { requireAuth } from "~/lib/auth";
+import { requireAuth } from "~/lib/auth.server";
 import type { Route } from "./+types/api.feed.engagement";
 import { createNotification } from "~/utils/notification";
 

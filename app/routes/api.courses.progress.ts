@@ -1,7 +1,7 @@
 import { eq, and, sql } from "drizzle-orm";
 import { db } from "~/db";
 import { userLessonProgress, courseLesson } from "~/db/schema/courses";
-import { requireAuth } from "~/lib/auth";
+import { requireAuth } from "~/lib/auth.server";
 import type { Route } from "./+types/api.courses.progress";
 
 export async function action({ request }: Route.ActionArgs) {

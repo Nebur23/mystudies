@@ -5,7 +5,7 @@ import { MapPin, School, Calendar, MessageCircle, Share2, Edit } from "lucide-re
 import { eq, and } from "drizzle-orm";
 import { db } from "~/db";
 import { studentProfile } from "~/db/schema/social";
-import { getSessionSafe, isProfileOwner } from "~/lib/auth";
+import { getSessionSafe, isProfileOwner } from "~/lib/auth.server";
 import type { Route } from "./+types/profile.username";
 import { ConnectButton } from "~/components/connections/ConnectButton";
 import { MutualConnections } from "~/components/connections/MutualConnections";

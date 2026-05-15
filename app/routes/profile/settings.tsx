@@ -8,7 +8,7 @@ import {
   Upload,
   X
 } from "lucide-react";
-import { requireAuth } from "~/lib/auth";
+import { requireAuth } from "~/lib/auth.server";
 import { calculateProfileCompletion } from "~/utils/profileCompletion";
 import { z } from "zod";
 import type { StudentProfile } from "~/types/profile";

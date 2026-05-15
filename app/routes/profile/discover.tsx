@@ -6,7 +6,7 @@ import { StudentCardSkeleton } from "~/components/discovery/StudentCardSkeleton"
 import { FilterSheet } from "~/components/discovery/FilterSheet";
 import { getSuggestions } from "~/utils/discovery/suggestions";
 import { searchStudents } from "~/utils/discovery/search";
-import { requireAuth } from "~/lib/auth";
+import { requireAuth } from "~/lib/auth.server";
 import type { Route } from "./+types/discover";
 
 export async function loader({ request }: Route.LoaderArgs) {

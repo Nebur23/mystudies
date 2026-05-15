@@ -3,7 +3,7 @@ import { useLoaderData, useFetcher, Link } from "react-router";
 import { UserPlus, Users, Clock, X } from "lucide-react";
 import { ConnectionRequests } from "~/components/connections/ConnectionRequests";
 import { StudentCard } from "~/components/discovery/StudentCard";
-import { requireAuth } from "~/lib/auth";
+import { requireAuth } from "~/lib/auth.server";
 import type { Route } from "./+types/connections";
 import { db } from "~/db";
 import { studentProfile, user, userConnection } from "../db/schema";

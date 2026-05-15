@@ -1,4 +1,4 @@
-import { requireAuth } from "~/lib/auth";
+import { requireAuth } from "~/lib/auth.server";
 import { subscribe, unsubscribe } from "~/utils/feed/sse";
 import type { Route } from "./+types/api.notifications.stream";
 

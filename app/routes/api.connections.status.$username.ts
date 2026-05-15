@@ -1,7 +1,7 @@
 import { eq, and } from "drizzle-orm";
 import { db } from "~/db";
 import { studentProfile, userConnection } from "~/db/schema/social";
-import { getSessionSafe } from "~/lib/auth";
+import { getSessionSafe } from "~/lib/auth.server";
 import type { Route } from "./+types/api.connections.status.$username";
 
 export async function loader({ params, request }: Route.LoaderArgs) {

@@ -2,7 +2,7 @@ import { eq, and, count, desc, ne } from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
 import { db } from "~/db";
 import { userConnection, studentProfile } from "~/db/schema/social";
-import { getSessionSafe } from "~/lib/auth";
+import { getSessionSafe } from "~/lib/auth.server";
 import type { Route } from "./+types/api.connections.mutual.$username";
 
 export async function loader({ params, request }: Route.LoaderArgs) {

@@ -3,7 +3,7 @@ import { redirect } from "react-router";
 import { eq, and } from "drizzle-orm";
 import { db } from "~/db";
 import { studentProfile } from "~/db/schema/social";
-import { requireAuth } from "~/lib/auth";
+import { requireAuth } from "~/lib/auth.server";
 import { calculateProfileCompletion, generateUsername } from "~/utils/profileCompletion";
 import { z } from "zod";
 import type { Route } from "./+types/api.profile.update";

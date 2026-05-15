@@ -2,7 +2,7 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { useNavigate, useFetcher, redirect, useLoaderData } from "react-router";
 import { ChevronLeft, CheckCircle2 } from "lucide-react";
-import { requireAuth } from "~/lib/auth";
+import { requireAuth } from "~/lib/auth.server";
 import { generateUsername } from "~/utils/profileCompletion";
 import type { Route } from "./+types/onboarding.profile";
 import { studentProfile } from "~/db/schema";
