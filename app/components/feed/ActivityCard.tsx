@@ -49,24 +49,27 @@ interface Props {
 
 export function ActivityCard({ activity, currentUserId, onLike, onComment }: Props) {
   const [showComments, setShowComments] = useState(false);
-  const [commentText, setCommentText]   = useState("");
-  const [comments, setComments]         = useState<Comment[]>([]);
+  const [commentText, setCommentText] = useState("");
+  const [comments, setComments] = useState<Comment[]>([]);
   const [commentsLoaded, setCommentsLoaded] = useState(false);
 
   // Separate fetchers for each concern
-  const likeFetcher    = useFetcher();
+  const likeFetcher = useFetcher();
   const commentFetcher = useFetcher<{ success: boolean; comment: Comment }>();
-  const loadFetcher    = useFetcher<{ comments: Comment[]; hasNextPage: boolean }>();
+  const loadFetcher = useFetcher<{ comments: Comment[]; hasNextPage: boolean }>();
 
   const isOwner = currentUserId === activity.userId;
 
   // Optimistic like state
-  const optimisticLiked = likeFetcher.state !== "idle"
-    ? !activity.isLiked
-    : activity.isLiked;
-  const optimisticCount = likeFetcher.state !== "idle"
-    ? activity.likesCount + (activity.isLiked ? -1 : 1)
-    : activity.likesCount;
+  // const optimisticLiked = likeFetcher.state !== "idle"
+  //   ? !activity.isLiked
+  //   : activity.isLiked;
+  // const optimisticCount = likeFetcher.state !== "idle"
+  //   ? activity.likesCount + (activity.isLiked ? -1 : 1)
+  //   : activity.likesCount;
+
+  const optimisticLiked = activity.isLiked;
+  const optimisticCount = activity.likesCount;
 
   // Append new comment from fetcher data when it resolves
   if (commentFetcher.data?.success && commentFetcher.data.comment) {
@@ -97,13 +100,13 @@ export function ActivityCard({ activity, currentUserId, onLike, onComment }: Pro
   };
 
   // Sync loaded comments into state
- 
+
 
   useEffect(() => {
-  if (loadFetcher.data?.comments) {
-    setComments(loadFetcher.data.comments);
-  }
-}, [loadFetcher.data]);
+    if (loadFetcher.data?.comments) {
+      setComments(loadFetcher.data.comments);
+    }
+  }, [loadFetcher.data]);
 
   const handleCommentSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -200,7 +203,7 @@ export function ActivityCard({ activity, currentUserId, onLike, onComment }: Pro
       {/* Header */}
       <div className="flex items-start justify-between p-4 pb-2">
         <Link to={`/profile/${activity.username}`} className="flex items-center gap-3 flex-1 min-w-0">
-          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center text-white font-bold overflow-hidden shrink-0">
+          <div className="w-10 h-10 rounded-full bg-linear-to-br from-purple-500 to-blue-500 flex items-center justify-center text-white font-bold overflow-hidden shrink-0">
             {activity.avatarUrl
               ? <img src={activity.avatarUrl} alt="" className="w-full h-full object-cover" />
               : activity.displayName.charAt(0).toUpperCase()
@@ -244,9 +247,8 @@ export function ActivityCard({ activity, currentUserId, onLike, onComment }: Pro
         <button
           onClick={handleLike}
           disabled={!currentUserId || likeFetcher.state !== "idle"}
-          className={`flex items-center gap-1.5 text-sm transition-colors disabled:cursor-not-allowed ${
-            optimisticLiked ? "text-red-500" : "text-slate-600 hover:text-red-500"
-          }`}
+          className={`flex items-center gap-1.5 text-sm transition-colors disabled:cursor-not-allowed ${optimisticLiked ? "text-red-500" : "text-slate-600 hover:text-red-500"
+            }`}
         >
           <Heart size={16} className={optimisticLiked ? "fill-current" : ""} />
           <span>{Math.max(0, optimisticCount)}</span>
@@ -254,9 +256,8 @@ export function ActivityCard({ activity, currentUserId, onLike, onComment }: Pro
 
         <button
           onClick={handleToggleComments}
-          className={`flex items-center gap-1.5 text-sm transition-colors ${
-            showComments ? "text-purple-600" : "text-slate-600 hover:text-purple-600"
-          }`}
+          className={`flex items-center gap-1.5 text-sm transition-colors ${showComments ? "text-purple-600" : "text-slate-600 hover:text-purple-600"
+            }`}
         >
           <MessageCircle size={16} />
           <span>{activity.commentsCount}</span>
@@ -298,7 +299,7 @@ export function ActivityCard({ activity, currentUserId, onLike, onComment }: Pro
 
             {comments.map(comment => (
               <div key={comment.id} className="flex gap-3 p-3">
-                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-slate-400 to-slate-600 flex items-center justify-center text-white text-xs font-bold shrink-0 overflow-hidden">
+                <div className="w-8 h-8 rounded-full bg-linear-to-br from-slate-400 to-slate-600 flex items-center justify-center text-white text-xs font-bold shrink-0 overflow-hidden">
                   {comment.avatarUrl
                     ? <img src={comment.avatarUrl} alt="" className="w-full h-full object-cover" />
                     : comment.displayName?.charAt(0).toUpperCase()
@@ -311,7 +312,7 @@ export function ActivityCard({ activity, currentUserId, onLike, onComment }: Pro
                       {formatDistanceToNow(new Date(comment.createdAt), { addSuffix: true })}
                     </span>
                   </div>
-                  <p className="text-sm text-slate-700 mt-0.5 break-words">{comment.content}</p>
+                  <p className="text-sm text-slate-700 mt-0.5 wrap-break-word">{comment.content}</p>
                   {comment.replyCount > 0 && (
                     <button className="text-xs text-purple-600 mt-1 hover:underline">
                       {comment.replyCount} {comment.replyCount === 1 ? "reply" : "replies"}

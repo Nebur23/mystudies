@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useFetcher } from "react-router";
 import { Image, Link2, Smile, Send, ChevronDown } from "lucide-react";
+import { toast } from "sonner";
 
 interface Props {
   currentUser: {
@@ -36,14 +37,22 @@ export function FeedComposer({ currentUser, onActivityCreated }: Props) {
       },
       { method: "POST", action: "/api/feed/create" }
     );
+
+    //optismistic
+    setContent({});
+    setExpanded(false);
+    toast.success("⭐⭐⭐⭐⭐⭐⭐⭐")
     
-    if (fetcher.data?.success) {
+  };
+
+  useEffect(() => {
+    if (fetcher.state === "idle" && fetcher.data?.success) {
+    console.log("data sucess")
       onActivityCreated?.(fetcher.data.activity);
-      // Reset form
       setContent({});
       setExpanded(false);
     }
-  };
+  }, [fetcher.state, fetcher.data]);
   
   // Render type-specific fields
   const renderTypeFields = () => {
@@ -169,7 +178,7 @@ export function FeedComposer({ currentUser, onActivityCreated }: Props) {
       <fetcher.Form onSubmit={handleSubmit}>
         {/* Header */}
         <div className="flex items-center gap-3 mb-3">
-                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center text-white text-3xl font-bold border-4 border-slate-200 overflow-hidden">
+                <div className="w-10 h-10 rounded-full bg-linear-to-br from-purple-500 to-blue-500 flex items-center justify-center text-white text-3xl font-bold border-4 border-slate-200 overflow-hidden">
             
              {currentUser.avatarUrl ? (
                     <img src={currentUser.avatarUrl} alt={currentUser.displayName} className="w-full h-full object-cover" />

@@ -5,6 +5,7 @@ import { requireAuth } from "~/lib/auth";
 import { z } from "zod";
 import type { Route } from "./+types/api.connections.action";
 import { formatZodErrors } from "~/utils/zod";
+import { createNotification } from "~/utils/notification";
 
 const connectionActionSchema = z.object({
   action: z.enum(["send", "accept", "decline", "block", "unfollow"]),
@@ -16,40 +17,49 @@ export async function action({ request }: Route.ActionArgs) {
   const session = await requireAuth(request);
   const formData = await request.formData();
 
-  console.log("connection data",formData)
+  console.log("connection data", formData)
   const validated = connectionActionSchema.safeParse(Object.fromEntries(formData));
-  
+
   if (!validated.success) {
     return Response.json({ errors: "Invalid request", details: formatZodErrors(validated.error.flatten().fieldErrors) }, { status: 400 });
   }
 
-  console.log(">>valided data",validated.data)
-  
+  console.log(">>valided data", validated.data)
+
   const { action, targetUserId, context } = validated.data;
   const currentUserId = session.user.id;
-  
+
   // Prevent self-connection
   if (currentUserId === targetUserId) {
     return Response.json({ error: "Cannot connect with yourself" }, { status: 400 });
   }
-  
-  // Check target exists and is public/allowing requests
-  const targetProfile = await db.query.studentProfile.findFirst({
-    where: eq(studentProfile.userId, targetUserId),
-    columns: { isPublic: true, allowFriendRequests: true }
-  });
-  
-  if (!targetProfile) {
+
+
+  // Fetch target owner + requester profile parallel 
+
+  const [targetProfile, requesterProfile] = await Promise.all([
+    // Check target exists and is public/allowing requests
+    await db.query.studentProfile.findFirst({
+      where: eq(studentProfile.userId, targetUserId),
+      columns: { isPublic: true, allowFriendRequests: true, displayName: true, username: true, avatarUrl: true, userId: true }
+    }),
+    db.query.studentProfile.findFirst({
+      where: eq(studentProfile.userId, currentUserId),
+      columns: { displayName: true, username: true, avatarUrl: true, userId: true },
+    })
+  ]);
+
+  if (!targetProfile || !requesterProfile) {
     return Response.json({ error: "User not found" }, { status: 404 });
   }
-  
+
   // Handle each action type
   switch (action) {
     case "send": {
       if (!targetProfile.allowFriendRequests) {
         return Response.json({ error: "This user doesn't accept connection requests" }, { status: 403 });
       }
-      
+
       // Check for existing connection
       const existing = await db.query.userConnection.findFirst({
         where: and(
@@ -57,11 +67,11 @@ export async function action({ request }: Route.ActionArgs) {
           eq(userConnection.followingId, targetUserId)
         )
       });
-      
+
       if (existing) {
         return Response.json({ error: "Connection already exists", status: existing.status }, { status: 409 });
       }
-      
+
       // Create pending connection
       await db.insert(userConnection).values({
         followerId: currentUserId,
@@ -69,12 +79,20 @@ export async function action({ request }: Route.ActionArgs) {
         status: "pending",
         connectionContext: context || "search",
       });
-      
+
       // TODO: Trigger notification to target user (Phase 5)
-      
+
+      await createNotification({
+        userId: targetUserId,           // B gets notified
+        type: "connection_request",
+        title: "New follow request",
+        body: `${requesterProfile.displayName} wants to connect with you`,
+        data: { fromUserId: requesterProfile.userId, fromUsername: requesterProfile.displayName },
+      });
+
       return { success: true, status: "pending", message: "Request sent" };
     }
-    
+
     case "accept": {
       // Verify the request exists and is pending TO current user
       const connection = await db.query.userConnection.findFirst({
@@ -84,21 +102,29 @@ export async function action({ request }: Route.ActionArgs) {
           eq(userConnection.status, "pending")
         )
       });
-      
+
       if (!connection) {
         return Response.json({ error: "No pending request found" }, { status: 404 });
       }
-      
+
       // Accept: update status
       await db.update(userConnection)
         .set({ status: "accepted", updatedAt: new Date() })
         .where(eq(userConnection.id, connection.id));
-      
+
       // TODO: Trigger "You're now connected" notification
-      
+
+      await createNotification({
+        userId: targetUserId,    // A gets notified (originalRequesterId)
+        type: "connection_accepted",
+        title: "Connection accepted",
+        body: `${requesterProfile.displayName} accepted your connection request`,
+        data: { fromUserId: requesterProfile.userId, fromUsername: requesterProfile.displayName },
+      });
+
       return { success: true, status: "accepted", message: "Connected!" };
     }
-    
+
     case "decline": {
       const connection = await db.query.userConnection.findFirst({
         where: and(
@@ -107,19 +133,19 @@ export async function action({ request }: Route.ActionArgs) {
           eq(userConnection.status, "pending")
         )
       });
-      
+
       if (!connection) {
         return Response.json({ error: "No pending request found" }, { status: 404 });
       }
-      
+
       // Decline: update status (or delete)
       await db.update(userConnection)
         .set({ status: "rejected", updatedAt: new Date() })
         .where(eq(userConnection.id, connection.id));
-      
+
       return { success: true, status: "rejected", message: "Request declined" };
     }
-    
+
     case "block": {
       // Block: upsert with blocked status (works for any existing state)
       await db.insert(userConnection)
@@ -133,10 +159,10 @@ export async function action({ request }: Route.ActionArgs) {
           target: [userConnection.followerId, userConnection.followingId],
           set: { status: "blocked", updatedAt: new Date() }
         });
-      
+
       return { success: true, status: "blocked", message: "User blocked" };
     }
-    
+
     case "unfollow": {
       // Delete the connection (soft delete by setting status if you prefer)
       await db.delete(userConnection)
@@ -144,10 +170,10 @@ export async function action({ request }: Route.ActionArgs) {
           eq(userConnection.followerId, currentUserId),
           eq(userConnection.followingId, targetUserId)
         ));
-      
+
       return { success: true, status: "none", message: "Unfollowed" };
     }
-    
+
     default:
       return Response.json({ error: "Unknown action" }, { status: 400 });
   }

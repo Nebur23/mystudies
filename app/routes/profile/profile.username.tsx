@@ -137,7 +137,7 @@ export default function PublicProfile() {
     <div className="min-h-screen bg-slate-50 pb-24">
       {/* Cover Image */}
 
-      <div className="h-32 md:h-48 bg-gradient-to-r from-purple-500 to-blue-500 relative">
+      <div className="h-32 md:h-48 bg-linear-to-r from-purple-500 to-blue-500 relative">
         {profile.coverImageUrl && (
           <img
             src={profile.coverImageUrl}
@@ -162,7 +162,7 @@ export default function PublicProfile() {
             {/* profile image */}
             <div className="flex items-center gap-4 mb-3">
               <div className="">
-                <div className="w-20 h-20 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center text-white text-3xl font-bold border-4 border-slate-200 overflow-hidden">
+                <div className="w-20 h-20 rounded-full bg-linear-to-br from-purple-500 to-blue-500 flex items-center justify-center text-white text-3xl font-bold border-4 border-slate-200 overflow-hidden">
 
                   {profile.avatarUrl ? (
                     <img src={profile.avatarUrl} alt={profile.displayName} className="w-full h-full object-cover" />

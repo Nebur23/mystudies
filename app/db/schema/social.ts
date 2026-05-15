@@ -186,3 +186,88 @@ export const activityCommentRelations = relations(activityComment, ({ one, many 
   }),
   replies: many(activityComment, { relationName: "replies" }),
 }));
+
+
+// ─────────────────────────────────────────────────────────────
+// USER NOTIFICATIONS
+// ─────────────────────────────────────────────────────────────
+export const userNotification = pgTable("user_notification", {
+  id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
+  userId: text("user_id").notNull()
+    .references(() => user.id, { onDelete: "cascade" }),
+  type: varchar("type", {
+    enum: [
+      "connection_request", "connection_accepted", "activity_like",
+      "activity_comment", "badge_earned", "weekly_challenge",
+      "study_invite", "report_resolved", "system_alert",
+    ],
+  }).notNull(),
+  title:       text("title").notNull(),
+  body:        text("body").notNull(),
+  data: jsonb("data").$type<{
+    activityId?:  string;
+    fromUserId?:  string;
+    fromUsername?: string;
+    challengeId?: string;
+    sessionId?:   string;
+    reportId?:    string;
+  }>(),
+  inApp: boolean("in_app").default(true),
+  email: boolean("email").default(false),
+  push:  boolean("push").default(false),
+  read:  boolean("read").default(false),
+  deliveredAt: timestamp("delivered_at"),
+  readAt:      timestamp("read_at"),
+  createdAt:   timestamp("created_at").notNull().defaultNow(),
+}, (table) => [
+  index("user_notification_userId_idx").on(table.userId),
+  // ❌ Partial index (WHERE read = false) goes in manual migration
+  index("user_notification_createdAt_idx").on(table.createdAt),
+]);
+
+// ─────────────────────────────────────────────────────────────
+// REPORTS & MODERATION
+// ─────────────────────────────────────────────────────────────
+export const report = pgTable("report", {
+  id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
+  reporterId: text("reporter_id").notNull()
+    .references(() => user.id, { onDelete: "cascade" }),
+  targetType: varchar("target_type", {
+    enum: ["profile", "activity", "comment", "message"],
+  }).notNull(),
+  targetId: text("target_id").notNull(),
+  reason: varchar("reason", {
+    enum: ["spam", "harassment", "inappropriate", "fake_profile", "cheating", "copyright", "other"],
+  }).notNull(),
+  details:    text("details"),
+  status: varchar("status", {
+    enum: ["pending", "reviewed", "resolved", "dismissed", "escalated"],
+  }).default("pending").notNull(),
+  reviewedBy: text("reviewed_by").references(() => user.id),
+  reviewedAt: timestamp("reviewed_at"),
+  adminNotes: text("admin_notes"),
+  createdAt:  timestamp("created_at").notNull().defaultNow(),
+}, (table) => [
+  index("report_target_idx").on(table.targetType, table.targetId),
+  index("report_status_idx").on(table.status),
+  index("report_reporterId_idx").on(table.reporterId),
+  index("report_createdAt_idx").on(table.createdAt),
+]);
+
+// ─────────────────────────────────────────────────────────────
+// RELATIONS
+// ─────────────────────────────────────────────────────────────
+export const userNotificationRelations = relations(userNotification, ({ one }) => ({
+  user: one(user, { fields: [userNotification.userId], references: [user.id] }),
+}));
+
+export const reportRelations = relations(report, ({ one }) => ({
+  reporter: one(user, {
+    fields: [report.reporterId], references: [user.id],
+    relationName: "reporter",
+  }),
+  reviewer: one(user, {
+    fields: [report.reviewedBy], references: [user.id],
+    relationName: "reviewer",
+  }),
+}));

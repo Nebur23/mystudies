@@ -3,6 +3,7 @@ import { db } from "~/db";
 import { activityLike, activityComment, studyActivity, studentProfile } from "~/db/schema/social";
 import { requireAuth } from "~/lib/auth";
 import type { Route } from "./+types/api.feed.engagement";
+import { createNotification } from "~/utils/notification";
 
 // Single action handler — dispatches by "intent" field
 export async function action({ request }: Route.ActionArgs) {
@@ -11,7 +12,7 @@ export async function action({ request }: Route.ActionArgs) {
   const intent = formData.get("intent") as string;
 
   switch (intent) {
-    case "like":    return handleLike(formData, session.user.id);
+    case "like": return handleLike(formData, session.user.id);
     case "comment": return handleComment(formData, session.user.id);
     default:
       return Response.json({ error: "Unknown intent" }, { status: 400 });
@@ -19,9 +20,9 @@ export async function action({ request }: Route.ActionArgs) {
 }
 
 // ── LIKE / UNLIKE ──────────────────────────────────────────────────────────────
-async function handleLike(formData: FormData, userId: string) {
+async function handleLike(formData: FormData, likerId: string) {
   const activityId = formData.get("activityId") as string;
-  const action     = formData.get("action") as "add" | "remove";
+  const action = formData.get("action") as "add" | "remove";
 
   if (!activityId) {
     return Response.json({ error: "Missing activityId" }, { status: 400 });
@@ -29,13 +30,40 @@ async function handleLike(formData: FormData, userId: string) {
 
   if (action === "add") {
     try {
-      await db.insert(activityLike).values({ activityId, userId });
+      await db.insert(activityLike).values({ activityId, userId: likerId });
 
       // Increment denormalized count
       await db
         .update(studyActivity)
         .set({ likesCount: sql`${studyActivity.likesCount} + 1` })
         .where(eq(studyActivity.id, activityId));
+
+      // Fetch activity owner + liker profile in parallel
+      const [activityRow, likerProfile] = await Promise.all([
+        db.query.studyActivity.findFirst({
+          where: eq(studyActivity.id, activityId),
+          columns: { userId: true },
+        }),
+        db.query.studentProfile.findFirst({
+          where: eq(studentProfile.userId, likerId),
+          columns: { username: true, displayName: true },
+        }),
+      ]);
+
+      // Don't notify yourself
+      if (activityRow && activityRow.userId !== likerId) {
+        await createNotification({
+          userId: activityRow.userId,
+          type: "activity_like",
+          title: "New like",
+          body: `${likerProfile?.displayName ?? "Someone"} liked your update`,
+          data: {
+            activityId,
+            fromUserId: likerId,
+            fromUsername: likerProfile?.username ?? "",
+          },
+        });
+      }
 
       return Response.json({ success: true, action: "liked" });
     } catch (e: any) {
@@ -51,7 +79,7 @@ async function handleLike(formData: FormData, userId: string) {
       .where(
         and(
           eq(activityLike.activityId, activityId),
-          eq(activityLike.userId, userId)
+          eq(activityLike.userId, likerId)
         )
       );
 
@@ -66,10 +94,10 @@ async function handleLike(formData: FormData, userId: string) {
 }
 
 // ── ADD COMMENT ────────────────────────────────────────────────────────────────
-async function handleComment(formData: FormData, userId: string) {
+async function handleComment(formData: FormData, commenterId: string) {
   const activityId = formData.get("activityId") as string;
-  const content    = (formData.get("content") as string)?.trim();
-  const parentId   = (formData.get("parentId") as string) || null;
+  const content = (formData.get("content") as string)?.trim();
+  const parentId = (formData.get("parentId") as string) || null;
 
   if (!activityId) {
     return Response.json({ error: "Missing activityId" }, { status: 400 });
@@ -80,14 +108,9 @@ async function handleComment(formData: FormData, userId: string) {
 
   const [newComment] = await db
     .insert(activityComment)
-    .values({ activityId, userId, content, parentId: parentId ?? undefined })
+    .values({ activityId, userId: commenterId, content, parentId: parentId ?? undefined })
     .returning();
 
-  // Fetch commenter profile for immediate UI display
-  const profile = await db.query.studentProfile.findFirst({
-    where: eq(studentProfile.userId, userId),
-    columns: { displayName: true, username: true, avatarUrl: true },
-  });
 
   // Increment denormalized count
   await db
@@ -95,24 +118,52 @@ async function handleComment(formData: FormData, userId: string) {
     .set({ commentsCount: sql`${studyActivity.commentsCount} + 1` })
     .where(eq(studyActivity.id, activityId));
 
+
+  // Fetch activity owner + commenter profile for immediate UI display in parallel 
+
+  const [activityRow, profile] = await Promise.all([
+    db.query.studyActivity.findFirst({
+      where: eq(studyActivity.id, activityId),
+      columns: { userId: true },
+    }),
+    db.query.studentProfile.findFirst({
+      where: eq(studentProfile.userId, commenterId),
+      columns: { displayName: true, username: true, avatarUrl: true },
+    }),
+  ]);
+
+  if (activityRow && activityRow.userId !== commenterId) {
+    await createNotification({
+      userId: activityRow.userId,
+      type: "activity_comment",
+      title: "New comment",
+      body: `${profile?.displayName ?? "Someone"} commented on your update`,
+      data: {
+        activityId,
+        fromUserId: commenterId,
+        fromUsername: profile?.username ?? "",
+      },
+    });
+  }
+
   return Response.json({
     success: true,
     comment: {
       ...newComment,
       displayName: profile?.displayName,
-      username:    profile?.username,
-      avatarUrl:   profile?.avatarUrl,
+      username: profile?.username,
+      avatarUrl: profile?.avatarUrl,
     },
   });
 }
 
 // ── LOAD COMMENTS (loader) ─────────────────────────────────────────────────────
 export async function loader({ request }: Route.LoaderArgs) {
-  const url        = new URL(request.url);
+  const url = new URL(request.url);
   const activityId = url.searchParams.get("activityId");
-  const parentId   = url.searchParams.get("parentId");
-  const cursor     = url.searchParams.get("cursor");
-  const limit      = 10;
+  const parentId = url.searchParams.get("parentId");
+  const cursor = url.searchParams.get("cursor");
+  const limit = 10;
 
   if (!activityId) {
     return Response.json({ error: "Missing activityId" }, { status: 400 });
@@ -120,14 +171,14 @@ export async function loader({ request }: Route.LoaderArgs) {
 
   const comments = await db
     .select({
-      id:          activityComment.id,
-      content:     activityComment.content,
-      createdAt:   activityComment.createdAt,
-      userId:      activityComment.userId,
-      parentId:    activityComment.parentId,
+      id: activityComment.id,
+      content: activityComment.content,
+      createdAt: activityComment.createdAt,
+      userId: activityComment.userId,
+      parentId: activityComment.parentId,
       displayName: studentProfile.displayName,
-      username:    studentProfile.username,
-      avatarUrl:   studentProfile.avatarUrl,
+      username: studentProfile.username,
+      avatarUrl: studentProfile.avatarUrl,
       // Inline reply count — only for top-level comments
       replyCount: sql<number>`(
         SELECT COUNT(*)::int FROM activity_comment ac2
@@ -151,11 +202,11 @@ export async function loader({ request }: Route.LoaderArgs) {
     .limit(limit + 1);
 
   const hasNextPage = comments.length > limit;
-  const pageItems   = hasNextPage ? comments.slice(0, -1) : comments;
+  const pageItems = hasNextPage ? comments.slice(0, -1) : comments;
 
   return Response.json({
-    comments:    pageItems,
+    comments: pageItems,
     hasNextPage,
-    nextCursor:  hasNextPage ? pageItems[pageItems.length - 1]?.createdAt : null,
+    nextCursor: hasNextPage ? pageItems[pageItems.length - 1]?.createdAt : null,
   });
 }

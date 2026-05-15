@@ -10,6 +10,14 @@ export async function requireAuth(request: Request) {
   return session;
 }
 
+export async function requireAdmin(request: Request) {
+  const session = await auth.api.getSession(request);
+  if (!session?.user) {
+    throw redirect(`/sign-in?redirect=${new URL(request.url).pathname}`);
+  }
+  return session;
+}
+
 export async function getSessionSafe(request: Request) {
   try {
     return await auth.api.getSession(request);

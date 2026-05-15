@@ -1,51 +1,55 @@
 import postgres from "postgres";
 
-// Dedicated listener connection — NOT from the pool
-// LISTEN requires a persistent single connection
 let listenerSql: postgres.Sql | null = null;
-const subscribers = new Map<string, Set<(payload: string) => void>>();
+
+// channel → Set of handlers
+const subscribers = new Map<string, Map<string, Set<(payload: string) => void>>>();
+const listeningChannels = new Set<string>();
 
 function getListenerConnection() {
   if (!listenerSql) {
     listenerSql = postgres(process.env.DATABASE_URL!, {
       max: 1,
-      idle_timeout: undefined, // keep alive forever
-      connection: { application_name: "feed_listener" },
+      idle_timeout: undefined,
+      connection: { application_name: "sse_listener" },
     });
   }
   return listenerSql;
 }
 
-// Called once at app startup (or lazily on first subscriber)
-let isListening = false;
+async function ensureListening(channel: string) {
+  if (listeningChannels.has(channel)) return;
+  listeningChannels.add(channel);
 
-async function ensureListening() {
-  if (isListening) return;
-  isListening = true;
-
-  const sql = getListenerConnection();
-
-  await sql.listen("new_study_activity", (payload) => {
-    // Fan out to all active SSE subscribers
-    for (const handlers of subscribers.values()) {
-      for (const handler of handlers) {
-        handler(payload);
-      }
+  await getListenerConnection().listen(channel, (payload) => {
+    const channelSubs = subscribers.get(channel);
+    if (!channelSubs) return;
+    for (const handlers of channelSubs.values()) {
+      for (const handler of handlers) handler(payload);
     }
   });
 }
 
-export function subscribe(userId: string, handler: (payload: string) => void) {
-  if (!subscribers.has(userId)) {
-    subscribers.set(userId, new Set());
-  }
-  subscribers.get(userId)!.add(handler);
-  ensureListening(); // no-op if already listening
+// channel defaults to "new_study_activity" for backward compat
+export function subscribe(
+  userId: string,
+  handler: (payload: string) => void,
+  channel = "new_study_activity",
+) {
+  if (!subscribers.has(channel)) subscribers.set(channel, new Map());
+  const channelSubs = subscribers.get(channel)!;
+  if (!channelSubs.has(userId)) channelSubs.set(userId, new Set());
+  channelSubs.get(userId)!.add(handler);
+  ensureListening(channel);
 }
 
-export function unsubscribe(userId: string, handler: (payload: string) => void) {
-  subscribers.get(userId)?.delete(handler);
-  if (subscribers.get(userId)?.size === 0) {
-    subscribers.delete(userId);
+export function unsubscribe(
+  userId: string,
+  handler: (payload: string) => void,
+  channel = "new_study_activity",
+) {
+  subscribers.get(channel)?.get(userId)?.delete(handler);
+  if (subscribers.get(channel)?.get(userId)?.size === 0) {
+    subscribers.get(channel)?.delete(userId);
   }
 }
