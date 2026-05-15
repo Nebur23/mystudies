@@ -1,7 +1,7 @@
 import { sql, eq, and, or, inArray, desc, ne } from "drizzle-orm";
 import { db } from "~/db";
 import { studyActivity, studentProfile, userConnection } from "~/db/schema/social";
-import { getSessionSafe } from "~/lib/auth.server";
+import { getSessionSafe } from "~/lib/auth";
 
 export async function getFeeds({ request }: { request: Request }) {
   const url = new URL(request.url);

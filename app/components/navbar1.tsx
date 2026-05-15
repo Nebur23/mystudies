@@ -21,6 +21,7 @@ import { cn } from "~/lib/utils";
 import { UserAvatar } from "./user-avatar";
 import Logo from "./logo";
 import { NotificationCenter } from "./notifications/NotificationCenter";
+import { useSession } from "~/lib/auth-client";
 
 interface MenuItem {
   title: string;
@@ -83,8 +84,9 @@ const Navbar1 = ({
     },
   },
 }: Navbar1Props) => {
-  const rootData = useRouteLoaderData("root");
-  const user = rootData?.user;
+const session = useSession();
+
+const user = session.data?.user;
 
   return (
     <section className={cn("py-4 border-b bg-background", className)}>

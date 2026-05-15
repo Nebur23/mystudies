@@ -1,14 +1,11 @@
-// app/routes/api.profile.update.ts
 import { redirect } from "react-router";
 import { eq, and } from "drizzle-orm";
 import { db } from "~/db";
 import { studentProfile } from "~/db/schema/social";
-import { requireAuth } from "~/lib/auth.server";
+import { auth, requireAuth } from "~/lib/auth.server";
 import { calculateProfileCompletion, generateUsername } from "~/utils/profileCompletion";
 import { z } from "zod";
 import type { Route } from "./+types/api.profile.update";
-import { user } from "../db/schema";
-import { auth } from "~/lib/auth.server";
 import { formatZodErrors } from "~/utils/zod";
 
 // ─── Coercion helpers ─────────────────────────────────────────────────────────

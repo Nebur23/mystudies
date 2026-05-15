@@ -1,16 +1,14 @@
 import { Outlet, redirect } from "react-router";
 import { Navbar1 } from "~/components/navbar1";
 import { db } from "~/db";
-import { auth } from "~/lib/auth.server";
 import { userNotification } from "../db/schema";
 import { and, eq, sql } from "drizzle-orm";
 import type { Route } from "./+types/appLayout";
 import { useLoaderData } from "react-router";
+import { requireAuth } from "~/lib/auth";
 
 export async function loader({ request }: Route.LoaderArgs) {
-  const session = await auth.api.getSession({
-    headers: request.headers,
-  });
+  const session = await requireAuth(request);
 
   if (!session?.user) {
     return { unreadCount : 0 }

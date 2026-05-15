@@ -2,9 +2,9 @@ import type { Route } from "./+types/leaderboard";
 import { useState } from "react";
 import { getLeaderboardData, getTopThree } from "~/lib/leaderboard.server";
 import { useLoaderData, useNavigate } from "react-router";
-import { auth } from "~/lib/auth.server";
 import type { StringifyOptions } from "querystring";
 import { UserAvatar } from "~/components/user-avatar";
+import { requireAuth } from "~/lib/auth";
 
 /**
  * React Router v7 Loader for leaderboard page
@@ -17,7 +17,7 @@ export async function loader({ request }: Route.LoaderArgs) {
   // if (!session?.user) return redirect("/login");
   // const userId = session.user.id;
 
-  const session = await auth.api.getSession({headers:request.headers})
+  const session = await requireAuth(request);
   
     const userId = session?.user.id
 
@@ -244,8 +244,8 @@ function PodiumPosition({ member, isFirst }: PodiumPositionProps) {
 
   return (
     <div
-      className={`flex flex-col items-center group w-1/3 max-w-[140px] ${
-        isFirst ? "-translate-y-4 max-w-[180px]" : ""
+      className={`flex flex-col items-center group w-1/3 max-w-35 ${
+        isFirst ? "-translate-y-4 max-w-45" : ""
       }`}
     >
       <div className="relative mb-3">

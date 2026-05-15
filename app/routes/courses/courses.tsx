@@ -5,7 +5,7 @@ import { CourseCard } from "~/components/courses/CourseCard";
 import type { Route } from "./+types/courses";
 import { db } from "~/db";
 import { course, userLessonProgress, courseLesson, courseModule } from "~/db/schema/courses";
-import { requireAuth } from "~/lib/auth.server";
+import { requireAuth } from "~/lib/auth";
 import { eq, asc, sql, and, inArray, like } from "drizzle-orm";
 import { CourseFilters } from "~/components/courses/CourseFilters";
 

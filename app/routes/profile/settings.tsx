@@ -8,7 +8,7 @@ import {
   Upload,
   X
 } from "lucide-react";
-import { requireAuth } from "~/lib/auth.server";
+import { requireAuth } from "~/lib/auth";
 import { calculateProfileCompletion } from "~/utils/profileCompletion";
 import { z } from "zod";
 import type { StudentProfile } from "~/types/profile";
@@ -197,7 +197,7 @@ export default function SettingsPage() {
         {/* Completion Warning (Profile Tab Only) */}
         {activeTab === "profile" && !completion.isComplete && (
           <div className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-lg text-sm text-amber-800 flex items-center gap-2">
-            <AlertTriangle size={16} className="flex-shrink-0" />
+            <AlertTriangle size={16} className="shrink-0" />
             <span>Profile is {completion.score}% complete. Add missing info to appear in search.</span>
           </div>
         )}
@@ -288,7 +288,7 @@ function ProfileTab({ profile, user }: { profile: any; user: any }) {
 
       <div className="flex items-center gap-4">
         <div className="relative">
-          <div className="w-20 h-20 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center text-white text-2xl font-bold overflow-hidden">
+          <div className="w-20 h-20 rounded-full bg-linear-to-br from-purple-500 to-blue-500 flex items-center justify-center text-white text-2xl font-bold overflow-hidden">
 
             {avatarSrc ? (
               <img
@@ -581,7 +581,7 @@ function SecurityTab({ session, setEmailVerificationPending, emailVerificationPe
                   {new UAParser(activeSession.userAgent as string).getOS().name},{" "}
                   {new UAParser(activeSession.userAgent as string).getBrowser().name}
                   <button
-                    className="text-red-500 opacity-80  cursor-pointer text-xs border-muted-foreground border-red-600  underline "
+                    className="text-red-500 opacity-80  cursor-pointer text-xs border-muted-foreground  underline "
                     onClick={async () => {
                       setIsTerminating(activeSession.id as string);
                       const res = await authClient.revokeSession({

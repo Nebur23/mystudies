@@ -2,7 +2,7 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { useNavigate, useFetcher, redirect, useLoaderData } from "react-router";
 import { ChevronLeft, CheckCircle2 } from "lucide-react";
-import { requireAuth } from "~/lib/auth.server";
+import { requireAuth } from "~/lib/auth";
 import { generateUsername } from "~/utils/profileCompletion";
 import type { Route } from "./+types/onboarding.profile";
 import { studentProfile } from "~/db/schema";
@@ -329,7 +329,7 @@ export default function ProfileSetup() {
                         </p>
                       </div>
                       {formData.level === level && (
-                        <CheckCircle2 className="text-purple-600 flex-shrink-0" size={24} />
+                        <CheckCircle2 className="text-purple-600 shrink-0" size={24} />
                       )}
                     </div>
                   </button>
@@ -464,7 +464,7 @@ export default function ProfileSetup() {
               <div className="mt-4 p-4 bg-slate-50 rounded-xl border border-slate-200">
                 <p className="text-xs font-medium text-slate-600 mb-2">Preview</p>
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center text-white font-bold">
+                  <div className="w-10 h-10 rounded-full bg-linear-to-br from-purple-500 to-blue-500 flex items-center justify-center text-white font-bold">
                     {formData.displayName.charAt(0).toUpperCase() || "?"}
                   </div>
                   <div>

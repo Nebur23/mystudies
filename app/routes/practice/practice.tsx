@@ -237,7 +237,7 @@ export const PracticePage: React.FC = () => {
           }`}
         >
           <div className="absolute top-4 right-4">
-            <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-gradient-to-r from-amber-400 to-orange-500 text-white text-xs font-bold">
+            <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-linear-to-r from-amber-400 to-orange-500 text-white text-xs font-bold">
               <Sparkles size={12} />
               AI Powered
             </span>
@@ -273,7 +273,7 @@ export const PracticePage: React.FC = () => {
       </div>
 
       {config.mode === 'competition' && (
-        <div className="mt-6 p-4 bg-gradient-to-r from-purple-50 to-blue-50 rounded-xl border border-purple-200">
+        <div className="mt-6 p-4 bg-linear-to-r from-purple-50 to-blue-50 rounded-xl border border-purple-200">
           <div className="flex items-center gap-3 mb-2">
             <Clock size={20} className="text-purple-600" />
             <span className="font-semibold text-slate-900">This Week's Challenge</span>
@@ -403,7 +403,7 @@ export const PracticePage: React.FC = () => {
                   </div>
                 </div>
                 {config.paper === paper && (
-                  <CheckCircle2 className="text-purple-600 flex-shrink-0" size={24} />
+                  <CheckCircle2 className="text-purple-600 shrink-0" size={24} />
                 )}
               </div>
             </button>
@@ -411,7 +411,7 @@ export const PracticePage: React.FC = () => {
         </div>
 
         {config.mode === 'competition' && (
-          <div className="mt-6 p-4 bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl border border-amber-200">
+          <div className="mt-6 p-4 bg-linear-to-r from-amber-50 to-orange-50 rounded-xl border border-amber-200">
             <div className="flex items-center gap-2 mb-2">
               <Brain size={20} className="text-amber-600" />
               <span className="font-semibold text-amber-900">AI-Generated Questions</span>
@@ -518,7 +518,7 @@ const renderProgress = () => (
               disabled={!canProceed()}
               className={`w-full py-4 rounded-xl font-bold text-lg transition-all flex items-center justify-center gap-2 ${
                 canProceed()
-                  ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-lg hover:shadow-xl active:scale-95'
+                  ? 'bg-linear-to-r from-purple-600 to-blue-600 text-white shadow-lg hover:shadow-xl active:scale-95'
                   : 'bg-slate-200 text-slate-400 cursor-not-allowed'
               }`}
             >

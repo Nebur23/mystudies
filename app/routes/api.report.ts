@@ -1,7 +1,7 @@
 import { eq, and, sql } from "drizzle-orm";
 import { db } from "~/db";
 import { report, userNotification, studentProfile } from "~/db/schema/social";
-import { requireAuth } from "~/lib/auth.server";
+import { requireAuth } from "~/lib/auth";
 import { z } from "zod";
 import type { Route } from "./+types/api.report";
 

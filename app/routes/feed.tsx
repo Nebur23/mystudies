@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { useLoaderData } from "react-router";
 import { ActivityCard, type Activity } from "~/components/feed/ActivityCard";
 import { FeedComposer } from "~/components/feed/FeedComposer";
-import { requireAuth } from "~/lib/auth.server";
+import { requireAuth } from "~/lib/auth";
 import type { Route } from "./+types/feed";
 import { BookOpen } from "lucide-react";
 import { getFeeds } from "~/utils/feed/get";

@@ -1,10 +1,8 @@
-// app/routes/api.profile.$username.ts
 import { redirect } from "react-router";
-import { eq, and } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { db } from "~/db";
 import { studentProfile } from "~/db/schema/social";
 import { getSessionSafe, isProfileOwner } from "~/lib/auth.server";
-import type { ProfileLoaderData } from "~/types/profile";
 import type { Route } from "./profile/+types/profile.username";
 
 export async function loader({ params, request }: Route.LoaderArgs) {

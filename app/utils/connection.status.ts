@@ -1,7 +1,7 @@
 import { eq, and, or } from "drizzle-orm";
 import { db } from "~/db";
 import { studentProfile, userConnection } from "~/db/schema/social";
-import { getSessionSafe } from "~/lib/auth.server";
+import { getSessionSafe } from "~/lib/auth";
 
 export async function ConnectionStatus({ params, request }: { params: { username: string }, request: Request }) {
   const { username } = params;

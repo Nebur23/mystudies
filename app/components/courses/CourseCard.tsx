@@ -40,7 +40,7 @@ export function CourseCard({ course, progress }: Props) {
             loading="lazy"
           />
         ) : (
-          <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-purple-100 to-blue-100">
+          <div className="w-full h-full flex items-center justify-center bg-linear-to-br from-purple-100 to-blue-100">
             <BookOpen size={32} className="text-purple-400" />
           </div>
         )}
@@ -65,7 +65,7 @@ export function CourseCard({ course, progress }: Props) {
             <h3 className="font-bold text-slate-900 line-clamp-1">{course.title}</h3>
             <p className="text-xs text-slate-500 mt-0.5">{course.subject}</p>
           </div>
-          <ChevronRight size={18} className="text-slate-400 flex-shrink-0 mt-1" />
+          <ChevronRight size={18} className="text-slate-400 shrink-0 mt-1" />
         </div>
         
         <p className="text-sm text-slate-600 mt-2 line-clamp-2">
