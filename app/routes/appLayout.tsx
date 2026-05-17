@@ -23,16 +23,16 @@ export async function loader({ request }: Route.LoaderArgs) {
       eq(userNotification.read, false),
     ));
 
-  return { unreadCount, currentUserId: session?.user.id };
+  return { unreadCount, currentUser: session?.user };
 }
 
 export default function AppLayout() {
-  const { unreadCount } = useLoaderData<typeof loader>();
+  const { unreadCount, currentUser } = useLoaderData<typeof loader>();
 
   return (
     <div>
       <div className=" border-b-2 border-muted/50 px-4">
-        <Navbar1 unreadCount={unreadCount} />
+        <Navbar1 unreadCount={unreadCount} currentUser={currentUser} />
       </div>
       <Outlet />
     </div>

@@ -18,14 +18,8 @@ export function YouTubePlayer({ videoId, lessonId, initialWatched, isCompleted, 
       isCompleted={isCompleted}
       onComplete={onComplete}
       onProgress={onProgress}
-      controls
       light={false}
-      playerConfig={{
-        youtube: {
-          color: "white",
-          playerVars: { modestbranding: 1, rel: 0, iv_load_policy: 3 },
-        },
-      }}
+   
     />
   );
 }

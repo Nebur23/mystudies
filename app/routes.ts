@@ -24,6 +24,7 @@ export default [
     route("onboarding/profile", "routes/profile/onboarding.profile.tsx"),
     route("courses", "routes/courses/courses.tsx"),
     route("courses/:slug", "routes/courses/courses.$slug.tsx"),
+    route("/admin/courses/new", "routes/courses/admin.courses.new.tsx"),
     route("practice", "routes/practice/practice.tsx"),
     route("profile/:username", "routes/profile/profile.username.tsx"),
     route("leaderboard", "routes/leaderboard.tsx"),
@@ -33,6 +34,7 @@ export default [
     route("feed", "routes/feed.tsx"),
     route("sign-in", "routes/auth/signin.tsx"),
     route("sign-up", "routes/auth/signup.tsx"),
+    route("/test", "routes/courses/play.tsx"),
 
     route("admin/reports", "routes/admin.reports.tsx"),
 

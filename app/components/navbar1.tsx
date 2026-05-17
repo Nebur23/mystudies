@@ -31,6 +31,16 @@ interface MenuItem {
 interface Navbar1Props {
   className?: string;
   unreadCount: number;
+  currentUser: {
+    id: string;
+    createdAt: Date;
+    updatedAt: Date;
+    email: string;
+    emailVerified: boolean;
+    name: string;
+    image?: string | null | undefined;
+    role: string | null | undefined;
+} | undefined; // Replace with your User type
 
   logo?: {
     url: string;
@@ -56,6 +66,7 @@ interface Navbar1Props {
 const Navbar1 = ({
   className,
   unreadCount,
+  currentUser,
 
   logo = {
     url: "/",
@@ -86,7 +97,7 @@ const Navbar1 = ({
 }: Navbar1Props) => {
 const session = useSession();
 
-const user = session.data?.user;
+const user = currentUser || session.data?.user;
 
   return (
     <section className={cn("py-4 border-b bg-background", className)}>

@@ -22,8 +22,8 @@ type ProgressMap = Record<string, ProgressEntry>;
 
 // ── Loader ────────────────────────────────────────────────────────────────────
 export async function loader({ params, request }: Route.LoaderArgs) {
-  const session    = await requireAuth(request);
-  const currentUserId = session.user.id; 
+  const session = await requireAuth(request);
+  const currentUserId = session.user.id;
 
   const courseData = await db.query.course.findFirst({
     where: eq(course.slug, params.slug),
@@ -44,14 +44,14 @@ export async function loader({ params, request }: Route.LoaderArgs) {
   // ✅ Guard: skip DB query if course has no lessons
   const progressData = allLessonIds.length > 0
     ? await db
-        .select()
-        .from(userLessonProgress)
-        .where(
-          and(
-            inArray(userLessonProgress.lessonId, allLessonIds),
-            eq(userLessonProgress.userId, currentUserId),
-          )
+      .select()
+      .from(userLessonProgress)
+      .where(
+        and(
+          inArray(userLessonProgress.lessonId, allLessonIds),
+          eq(userLessonProgress.userId, currentUserId),
         )
+      )
     : [];
 
   const progressMap: ProgressMap = Object.fromEntries(
@@ -74,14 +74,14 @@ export async function loader({ params, request }: Route.LoaderArgs) {
     }
   }
 
-  const completedCount  = progressData.filter(p => p.completed).length;
-  const totalLessons    = allLessonIds.length;
+  const completedCount = progressData.filter(p => p.completed).length;
+  const totalLessons = allLessonIds.length;
   const progressPercent = totalLessons > 0
     ? Math.round((completedCount / totalLessons) * 100)
     : 0;
 
   return {
-    course:          courseData,
+    course: courseData,
     progressMap,
     nextLessonId,
     progressPercent,
@@ -132,8 +132,8 @@ export default function CoursePage() {
         [lessonId]: {
           lessonId,
           watchedSeconds,
-          completed:      true,
-          lastWatchedAt:  new Date(),
+          completed: true,
+          lastWatchedAt: new Date(),
         },
       };
       if (!wasCompleted) setCompletedCount(c => c + 1);
@@ -151,7 +151,7 @@ export default function CoursePage() {
         ...prev[lessonId],
         lessonId,
         watchedSeconds,
-        completed:     prev[lessonId]?.completed ?? false,
+        completed: prev[lessonId]?.completed ?? false,
         lastWatchedAt: new Date(),
       },
     }));
@@ -202,7 +202,7 @@ export default function CoursePage() {
           <div>
             <div className="bg-black">
               <YouTubePlayer
-                key={activeLesson.id} 
+                key={activeLesson.id}
                 videoId={activeLesson.youtubeVideoId}
                 lessonId={activeLesson.id}
                 initialWatched={activeProgress?.watchedSeconds ?? 0}
@@ -274,11 +274,10 @@ export default function CoursePage() {
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
-                className={`flex-1 py-3 text-sm font-medium border-b-2 transition-colors flex items-center justify-center gap-2 ${
-                  activeTab === tab
+                className={`flex-1 py-3 text-sm font-medium border-b-2 transition-colors flex items-center justify-center gap-2 ${activeTab === tab
                     ? "border-purple-600 text-purple-700"
                     : "border-transparent text-slate-500 hover:text-slate-700"
-                }`}
+                  }`}
               >
                 {tab === "lessons" ? <BookOpen size={15} /> : <MessageSquare size={15} />}
                 {tab.charAt(0).toUpperCase() + tab.slice(1)}
