@@ -41,16 +41,16 @@ interface PrivacyToggleProps {
 // ─── Constants ────────────────────────────────────────────────────────────────
 
 const CAMEROON_REGIONS = [
-  { value: "adamawa",   label: "Adamawa" },
-  { value: "centre",    label: "Centre" },
-  { value: "east",      label: "East" },
+  { value: "adamawa", label: "Adamawa" },
+  { value: "centre", label: "Centre" },
+  { value: "east", label: "East" },
   { value: "far_north", label: "Far North" }, // FIX: was missing
-  { value: "littoral",  label: "Littoral" },
-  { value: "north",     label: "North" },
+  { value: "littoral", label: "Littoral" },
+  { value: "north", label: "North" },
   { value: "northwest", label: "Northwest" },
-  { value: "south",     label: "South" },
+  { value: "south", label: "South" },
   { value: "southwest", label: "Southwest" },
-  { value: "west",      label: "West" },
+  { value: "west", label: "West" },
 ] as const;
 
 const SUBJECTS = [
@@ -122,9 +122,9 @@ export default function ProfileSetup() {
         bio: existingProfile.bio ?? "",
         targetExamYear: existingProfile.targetExamYear ?? 0,
         privacy: {
-          isPublic:      existingProfile.isPublic     as boolean,
-          showStats:     existingProfile.showStats    as boolean,
-          showSubjects:  existingProfile.showSubjects as boolean,
+          isPublic: existingProfile.isPublic as boolean,
+          showStats: existingProfile.showStats as boolean,
+          showSubjects: existingProfile.showSubjects as boolean,
         },
       });
     }
@@ -137,7 +137,7 @@ export default function ProfileSetup() {
     }
   }, [fetcher.state, fetcher.data, formData.username, navigate]);
 
-    const update = useCallback(
+  const update = useCallback(
     (patch: Partial<FormData>) => setFormData((prev) => ({ ...prev, ...patch })),
     [],
   );
@@ -158,7 +158,7 @@ export default function ProfileSetup() {
       );
       case 2: return formData.level === "olevel" || formData.level === "alevel";
       case 3: return formData.region !== "";
-      case 4: return formData.subjects.length >= 1;
+      case 4: return formData.subjects.length >= 1 
       case 5: return true;
       default: return false;
     }
@@ -271,11 +271,10 @@ export default function ProfileSetup() {
                     className="w-full pl-7 pr-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-purple-500 outline-none"
                   />
                 </div>
-                <p className={`text-xs mt-1 ${
-                  formData.username && !/^[a-zA-Z0-9_]{3,20}$/.test(formData.username)
+                <p className={`text-xs mt-1 ${formData.username && !/^[a-zA-Z0-9_]{3,20}$/.test(formData.username)
                     ? "text-red-500"
                     : "text-slate-500"
-                }`}>
+                  }`}>
                   {formData.username && !/^[a-zA-Z0-9_]{3,20}$/.test(formData.username)
                     ? "3–20 characters: letters, numbers, underscores only."
                     : "3–20 characters. Auto-suggested from your name."}
@@ -311,11 +310,10 @@ export default function ProfileSetup() {
                     key={level}
                     type="button"
                     onClick={() => update({ level })}
-                    className={`p-4 rounded-xl border-2 text-left transition-all ${
-                      formData.level === level
+                    className={`p-4 rounded-xl border-2 text-left transition-all ${formData.level === level
                         ? "border-purple-600 bg-purple-50 shadow-sm"
                         : "border-slate-200 bg-white hover:border-purple-300"
-                    }`}
+                      }`}
                   >
                     <div className="flex items-center justify-between">
                       <div>
@@ -324,8 +322,8 @@ export default function ProfileSetup() {
                         </h3>
                         <p className="text-sm text-slate-600 mt-1">
                           {level === "olevel"
-                            ? "Form 3–4 / Ages 14–16"
-                            : "Lower 6th–Upper 6th / Ages 17–19"}
+                            ? "Form 3–4-5"
+                            : "Lower 6th–Upper 6th"}
                         </p>
                       </div>
                       {formData.level === level && (
@@ -382,7 +380,7 @@ export default function ProfileSetup() {
 
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-2">
-                  Subjects You're Studying
+                  Subjects You're Studying <span className="text-red-500">*</span>
                 </label>
                 <div className="grid grid-cols-2 gap-2">
                   {SUBJECTS.map((subject) => (
@@ -395,11 +393,10 @@ export default function ProfileSetup() {
                           : [...formData.subjects, subject];
                         update({ subjects });
                       }}
-                      className={`p-3 rounded-lg border text-sm font-medium transition-all ${
-                        formData.subjects.includes(subject)
+                      className={`p-3 rounded-lg border text-sm font-medium transition-all ${formData.subjects.includes(subject)
                           ? "border-purple-600 bg-purple-50 text-purple-700"
                           : "border-slate-200 bg-white text-slate-700 hover:border-purple-300"
-                      }`}
+                        }`}
                     >
                       {subject}
                     </button>
@@ -410,17 +407,17 @@ export default function ProfileSetup() {
 
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1">
-                  Target Exam Year
+                  Target Exam Year <span className="text-red-500">*</span>
                 </label>
                 <select
                   value={formData.targetExamYear || ""}
                   onChange={(e) => update({ targetExamYear: Number(e.target.value) })}
                   className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-purple-500 outline-none bg-white"
                 >
-                  <option value="">Select year</option>
+                  <option  value="">Select year</option>
                   {/* FIX 9: Dynamically computed years */}
                   {examYears.map((year) => (
-                    <option key={year} value={year}>{year}</option>
+                    <option  key={year} value={year}>{year}</option>
                   ))}
                 </select>
               </div>

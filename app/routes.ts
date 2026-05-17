@@ -34,7 +34,7 @@ export default [
     route("feed", "routes/feed.tsx"),
     route("sign-in", "routes/auth/signin.tsx"),
     route("sign-up", "routes/auth/signup.tsx"),
-    route("/test", "routes/courses/play.tsx"),
+    route("library", "routes/library.tsx"),
 
     route("admin/reports", "routes/admin.reports.tsx"),
 

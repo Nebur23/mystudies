@@ -32,7 +32,7 @@ const uploadRouter = {
     }),
 } satisfies FileRouter;
 
-//export type UploadRouter = typeof uploadRouter;
+export type UploadRouter = typeof uploadRouter;
 
 
 const handlers = createRouteHandler({ router: uploadRouter });

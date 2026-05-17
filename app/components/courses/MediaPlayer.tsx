@@ -4,6 +4,7 @@ import ReactPlayer from "react-player";
 import {
   Play, Pause, Volume2, VolumeX, Maximize,
   CheckCircle2, RotateCcw,
+  RotateCw,
 } from "lucide-react";
 import Duration from "./Duration";
 
@@ -227,6 +228,13 @@ export const MediaPlayer = memo(function MediaPlayer({
     }
   };
 
+  // Add with the other handlers
+  const handleSkip = (seconds: number) => {
+    const player = playerRef.current;
+    if (!player) return;
+    player.currentTime = Math.max(0, Math.min(player.currentTime + seconds, durationRef.current));
+  };
+
   // ── Save on tab close ─────────────────────────────────────────────────────
   useEffect(() => {
     const handle = () => saveProgress(playedSecRef.current, completedRef.current, true);
@@ -367,6 +375,30 @@ export const MediaPlayer = memo(function MediaPlayer({
                 : <Play size={18} className="fill-current" />
               }
             </button>
+
+
+
+            {/* ✅ Skip back 10s */}
+            <button
+              onClick={() => handleSkip(-10)}
+              className="text-white/70 hover:text-white transition-colors p-1 flex items-center gap-0.5 text-xs"
+              aria-label="Rewind 10 seconds"
+            >
+              <RotateCcw size={14} />
+              <span className="font-mono text-[10px]">10</span>
+            </button>
+
+            {/* ✅ Skip forward 10s */}
+            <button
+              onClick={() => handleSkip(10)}
+              className="text-white/70 hover:text-white transition-colors p-1 flex items-center gap-0.5 text-xs"
+              aria-label="Forward 10 seconds"
+            >
+              <RotateCw size={14} />
+              <span className="font-mono text-[10px]">10</span>
+            </button>
+
+    
 
             {/* Volume */}
             <div className="flex items-center gap-1.5 group/vol">

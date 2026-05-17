@@ -136,7 +136,7 @@ export async function action({ request }: Route.ActionArgs) {
     if (existing && existing.userId !== session.user.id) {
       return Response.json(
         {
-          errors: { username: "Username: This username is already taken. Please choose another." },
+          errors: { username: `@${data.username}: This username is already taken. Please choose another.` },
           message: "Username unavailable.",
         },
         { status: 409 },

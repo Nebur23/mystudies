@@ -10,6 +10,7 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 @import "@fontsource-variable/inter";
+@import "uploadthing/tw/v4";
 
 
 @custom-variant dark (&:is(.dark *));
