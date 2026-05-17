@@ -3,6 +3,7 @@ export * from "./auth";
 export * from "./quiz";
 export * from "./social";
 export * from "./courses";
+export * from "./library";
 
 // Cross-table userRelations lives here because it references tables from all files
 import { relations } from "drizzle-orm";

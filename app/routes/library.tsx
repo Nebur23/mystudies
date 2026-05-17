@@ -1,51 +1,167 @@
 import { useState, useEffect } from "react";
 import { useLoaderData, useSearchParams } from "react-router";
 import {
-    Search, SlidersHorizontal, BookOpen, FileText,
-    Download, Bookmark, X, TrendingUp, Sparkles,
+  Search, SlidersHorizontal, BookOpen, FileText,
+  Download, Bookmark, X, TrendingUp, Sparkles,
 } from "lucide-react";
 import { ResourceCard } from "~/components/library/ResourceCard";
 import { LibraryFilterSheet } from "~/components/library/LibraryFilterSheet";
 import type { Route } from "./+types/library";
-import { mockCategories, mockResources, mockBookmarkedIds } from "~/data/mockLibrary";
+import { db } from "~/db";
+import { resource, resourceCategory, resourceBookmark } from "~/db/schema/library";
+import { requireAuth } from "~/lib/auth";
+import { eq, and, or, desc, asc, inArray, sql } from "drizzle-orm";
 
 export async function loader({ request }: Route.LoaderArgs) {
-    const url = new URL(request.url);
-    const search = url.searchParams.get("q")?.toLowerCase() ?? "";
-    const category = url.searchParams.get("category");
-    const level = url.searchParams.get("level");
-    const subject = url.searchParams.get("subject");
-    const year = url.searchParams.get("year");
-    const filter = url.searchParams.get("filter") ?? "all";
+  const session = await requireAuth(request);
+  const url     = new URL(request.url);
 
-    let filtered = mockResources;
-    if (search) filtered = filtered.filter(r => r.title.toLowerCase().includes(search) || r.subject.toLowerCase().includes(search));
-    if (category) filtered = filtered.filter(r => r.category.slug === category);
-    if (level) filtered = filtered.filter(r => r.level === level || r.level === "both");
-    if (subject) filtered = filtered.filter(r => r.subject === subject);
-    if (year) filtered = filtered.filter(r => r.year === parseInt(year));
-    if (filter === "bookmarked") filtered = filtered.filter(r => mockBookmarkedIds.has(r.id));
+  const search   = url.searchParams.get("q")?.trim()      ?? "";
+  const category = url.searchParams.get("category")       ?? "";
+  const level    = url.searchParams.get("level")          ?? "";
+  const subject  = url.searchParams.get("subject")        ?? "";
+  const year     = url.searchParams.get("year")           ?? "";
+  const filter   = url.searchParams.get("filter")         ?? "all";
 
-    const allSubjects = [...new Set(mockResources.map(r => r.subject))].sort();
-    const allYears = [...new Set(mockResources.map(r => r.year).filter(Boolean) as number[])].sort((a, b) => b - a);
+  // ── 1. Categories with counts ────────────────────────────────────────────
+  const categories = await db
+    .select({
+      id:          resourceCategory.id,
+      name:        resourceCategory.name,
+      slug:        resourceCategory.slug,
+      icon:        resourceCategory.icon,
+      order:       resourceCategory.order,
+      count:       sql<number>`COUNT(${resource.id})::int`,
+    })
+    .from(resourceCategory)
+    .leftJoin(resource, and(
+      eq(resource.categoryId, resourceCategory.id),
+      eq(resource.isPublished, true),
+    ))
+    .groupBy(resourceCategory.id)
+    .orderBy(asc(resourceCategory.order));
 
-    // Category counts for the grid
-    const categoryCounts = mockCategories.map(cat => ({
-        ...cat,
-        count: mockResources.filter(r => r.category.slug === cat.slug).length,
-    }));
+  // ── 2. User's bookmarks ──────────────────────────────────────────────────
+  const userBookmarks = await db
+    .select({ resourceId: resourceBookmark.resourceId })
+    .from(resourceBookmark)
+    .where(eq(resourceBookmark.userId, session.user.id));
 
-    return {
-        resources: filtered,
-        categories: categoryCounts,
-        availableFilters: { subjects: allSubjects, years: allYears },
-        currentFilters: { search, category, level, subject, year, filter },
-        bookmarkedSet: Object.fromEntries(
-            [...mockBookmarkedIds].map(id => [id, true])
-        ) as Record<string, boolean>, totalCount: mockResources.length,
-        isFiltering: !!(search || category || level || subject || year || filter !== "all"),
-    };
+  const bookmarkedIds = new Set(userBookmarks.map(b => b.resourceId));
+
+  // ── 3. Build WHERE conditions ────────────────────────────────────────────
+  const conditions = [eq(resource.isPublished, true)];
+
+  if (search) {
+    conditions.push(
+      or(
+        // tsvector full-text (raw column — not in Drizzle schema)
+        sql`search_vector @@ websearch_to_tsquery('english', unaccent(${search}))`,
+        // trgm fallback for short/partial queries
+        sql`(
+          coalesce(${resource.title}, '') || ' ' ||
+          coalesce(${resource.subject}, '') || ' ' ||
+          coalesce(${resource.description}, '')
+        ) % ${search}`,
+      ) as any
+    );
+  }
+
+  if (category) conditions.push(
+    eq(resourceCategory.slug, category)   // join needed — see query below
+  );
+  if (level)   conditions.push(eq(resource.level,   level   as "olevel" | "alevel" | "both"));
+  if (subject) conditions.push(eq(resource.subject, subject));
+  if (year)    conditions.push(eq(resource.year,    parseInt(year)));
+
+  if (filter === "bookmarked" && bookmarkedIds.size > 0) {
+    conditions.push(inArray(resource.id, [...bookmarkedIds]));
+  } else if (filter === "bookmarked") {
+    // No bookmarks — return empty
+    return emptyResponse(categories, session.user.id);
+  }
+
+  // ── 4. Rank expression for search ───────────────────────────────────────
+  const rankExpr = search
+    ? sql<number>`CASE
+        WHEN search_vector @@ websearch_to_tsquery('english', unaccent(${search}))
+          THEN ts_rank(search_vector, websearch_to_tsquery('english', unaccent(${search}))) * 2
+        ELSE similarity(
+          coalesce(${resource.title},'') || ' ' || coalesce(${resource.subject},''),
+          ${search}
+        )
+      END`
+    : sql<number>`${resource.downloadCount}`;
+
+  // ── 5. Main query ────────────────────────────────────────────────────────
+  const resources = await db
+    .select({
+      id:            resource.id,
+      title:         resource.title,
+      slug:          resource.slug,
+      description:   resource.description,
+      level:         resource.level,
+      subject:       resource.subject,
+      year:          resource.year,
+      fileType:      resource.fileType,
+      fileSize:      resource.fileSize,
+      downloadCount: resource.downloadCount,
+      isPremium:     resource.isPremium,
+      thumbnailUrl:  resource.thumbnailUrl,
+      category: {
+        name: resourceCategory.name,
+        slug: resourceCategory.slug,
+        icon: resourceCategory.icon,
+      },
+      rank: rankExpr,
+    })
+    .from(resource)
+    .innerJoin(resourceCategory, eq(resource.categoryId, resourceCategory.id))
+    .where(and(...conditions))
+    .orderBy(
+      search
+        ? sql`rank DESC`
+        : sql`${resource.isPremium} ASC, ${resource.downloadCount} DESC`
+    )
+    .limit(100);
+
+  // ── 6. Available filter options ──────────────────────────────────────────
+  const allMeta = await db
+    .select({ subject: resource.subject, year: resource.year })
+    .from(resource)
+    .where(eq(resource.isPublished, true));
+
+  const availableFilters = {
+    subjects: [...new Set(allMeta.map(r => r.subject))].sort(),
+    years:    [...new Set(allMeta.map(r => r.year).filter(Boolean) as number[])].sort((a, b) => b - a),
+  };
+
+  const isFiltering = !!(search || category || level || subject || year || filter !== "all");
+
+  return {
+    resources,
+    categories,
+    availableFilters,
+    currentFilters: { search, category, level, subject, year, filter },
+    bookmarkedSet:  Object.fromEntries([...bookmarkedIds].map(id => [id, true])),
+    totalCount:     resources.length,
+    isFiltering,
+  };
 }
+
+function emptyResponse(categories: any[], userId: string) {
+  return {
+    resources:        [],
+    categories,
+    availableFilters: { subjects: [], years: [] },
+    currentFilters:   { search: "", category: "", level: "", subject: "", year: "", filter: "bookmarked" },
+    bookmarkedSet:    {} as Record<string, boolean>,
+    totalCount:       0,
+    isFiltering:      true,
+  };
+}
+
+// ... component unchanged from previous version
 
 // Category visual config
 const CAT_CONFIG: Record<string, { bg: string; text: string; border: string; accent: string }> = {
@@ -271,7 +387,7 @@ export default function LibraryPage() {
                             </p>
                         </div>
                         <div className="flex gap-3 overflow-x-auto pb-1 scrollbar-hide">
-                            {[...mockResources]
+                            {[...resources]
                                 .sort((a, b) => b.downloadCount - a.downloadCount)
                                 .slice(0, 5)
                                 .map(r => (

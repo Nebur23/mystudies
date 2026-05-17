@@ -9,11 +9,11 @@ import {
 import { db } from "~/db";
 import { course, courseModule, courseLesson } from "~/db/schema/courses";
 import { requireAuth } from "~/lib/auth";
-import type { Route } from "./+types/admin.courses.new";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { YoutubeIcon } from "@hugeicons/core-free-icons";
 import { useUploadThing } from "~/utils/uploadthing";
 import { toast } from "sonner";
+import type { Route } from "./+types/admin.courses.new";
 
 // ── Server action ─────────────────────────────────────────────────────────────
 export async function action({ request }: Route.ActionArgs) {

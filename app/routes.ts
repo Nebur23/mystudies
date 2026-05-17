@@ -17,6 +17,9 @@ export default [
   route("api/notifications/stream", "routes/api.notifications.stream.ts"),
   route("api/notifications/index", "routes/api.notifications.index.ts"),
   route("api/courses/progress", "routes/api.courses.progress.ts"),
+  route("api/library/analytics", "routes/api.library.analytics.ts"),
+  route("api/library/download", "routes/api.library.download.ts"),
+
 
   layout("routes/appLayout.tsx", [
     index("routes/home/home.tsx"),
@@ -24,7 +27,11 @@ export default [
     route("onboarding/profile", "routes/profile/onboarding.profile.tsx"),
     route("courses", "routes/courses/courses.tsx"),
     route("courses/:slug", "routes/courses/courses.$slug.tsx"),
-    route("/admin/courses/new", "routes/courses/admin.courses.new.tsx"),
+
+    route("/admin/courses/new", "routes/admin/admin.courses.new.tsx"),
+    route("/admin/library/upload", "routes/admin/admin.library.upload.tsx"),
+    route("admin/reports", "routes/admin/admin.reports.tsx"),
+
     route("practice", "routes/practice/practice.tsx"),
     route("profile/:username", "routes/profile/profile.username.tsx"),
     route("leaderboard", "routes/leaderboard.tsx"),
@@ -35,8 +42,8 @@ export default [
     route("sign-in", "routes/auth/signin.tsx"),
     route("sign-up", "routes/auth/signup.tsx"),
     route("library", "routes/library.tsx"),
+    route("library/:slug", "routes/library.$slug.tsx"),
 
-    route("admin/reports", "routes/admin.reports.tsx"),
 
     // layout("routes/profile/ProfileLayout.tsx", [
     route("profile/me", "routes/profile/profile.tsx"),

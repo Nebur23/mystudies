@@ -82,6 +82,7 @@ const Navbar1 = ({
     { title: "Leaderboard", url: "/leaderboard" },
     { title: "Find Students", url: "/discover" },
     { title: "Posts", url: "/feed" },
+    { title: "Library", url: "/library" },
   ],
 
   auth = {

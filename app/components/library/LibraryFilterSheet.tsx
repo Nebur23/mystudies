@@ -4,7 +4,7 @@ import { X, Check, SlidersHorizontal } from "lucide-react";
 interface Props {
   isOpen: boolean;
   onClose: () => void;
-  categories: { id: string; name: string; slug: string; icon?: string; count: number }[];
+  categories: { id: string; name: string; slug: string; icon?: string | null; count: number }[];
   currentFilters: {
     level?:    string | null;
     subject?:  string | null;
