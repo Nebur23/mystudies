@@ -1,13 +1,14 @@
-"use client";
-
-// ~/components/PdfPreviewClient.tsx
-// Uses dynamic import + mounted guard so react-pdf is NEVER touched by SSR.
-
 import { useState, useEffect, useCallback, useRef } from "react";
 import {
   ChevronLeft, ChevronRight, ZoomIn, ZoomOut,
   Download, Loader2, AlertCircle, Star,
 } from "lucide-react";
+import { Document, Page, pdfjs } from "react-pdf";
+import "react-pdf/dist/Page/AnnotationLayer.css";
+import "react-pdf/dist/Page/TextLayer.css";
+
+// ✅ Import statically — worker is already configured in entry.client.tsx
+// The component is still SSR-safe because we guard rendering with `mounted` state
 
 interface Props {
   fileUrl:    string;
@@ -15,10 +16,6 @@ interface Props {
   isPremium:  boolean;
   onDownload: () => void;
 }
-
-// Module-level cache so we only import once across navigations
-type PdfModule = typeof import("react-pdf");
-let cachedModule: PdfModule | null = null;
 
 export default function PdfPreviewClient({
   fileUrl,
@@ -29,31 +26,16 @@ export default function PdfPreviewClient({
   const containerRef = useRef<HTMLDivElement>(null);
 
   const [mounted,    setMounted]    = useState(false);
-  const [pdfMod,     setPdfMod]     = useState<PdfModule | null>(cachedModule);
   const [page,       setPage]       = useState(1);
   const [zoom,       setZoom]       = useState(1);
   const [totalPages, setTotalPages] = useState(0);
   const [limitHit,   setLimitHit]   = useState(false);
   const [width,      setWidth]      = useState(680);
 
-  // ── Step 1: after hydration, dynamically import react-pdf ─────────────────
-  // useEffect never runs on the server, so pdfjs-dist is never evaluated in Node
-  useEffect(() => {
-    setMounted(true);
+  // ✅ Mount guard — prevents SSR from rendering the canvas
+  useEffect(() => { setMounted(true); }, []);
 
-    if (cachedModule) {
-      setPdfMod(cachedModule);
-      return;
-    }
-
-    import("react-pdf").then((mod) => {
-      mod.pdfjs.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.mjs";
-      cachedModule = mod;
-      setPdfMod(mod);
-    });
-  }, []);
-
-  // ── Step 2: track container width for responsive scaling ──────────────────
+  // Track container width for responsive scaling
   useEffect(() => {
     const el = containerRef.current;
     if (!el) return;
@@ -64,7 +46,9 @@ export default function PdfPreviewClient({
     return () => ro.disconnect();
   }, [mounted]);
 
-  const effectiveMax = isPremium ? maxPages : (totalPages || maxPages);
+  const effectiveMax = totalPages
+    ? (isPremium ? Math.min(maxPages, totalPages) : totalPages)
+    : maxPages;
 
   const goNext = () => {
     if (page >= effectiveMax) { setLimitHit(true); return; }
@@ -81,10 +65,9 @@ export default function PdfPreviewClient({
     setTotalPages(numPages);
   }, []);
 
-  const showOverlay = limitHit || (isPremium && page > 1);
+  const showOverlay = limitHit || (isPremium && page > maxPages);
 
-  // ── Render nothing meaningful until we're in the browser ──────────────────
-  if (!mounted || !pdfMod) {
+  if (!mounted) {
     return (
       <div className="bg-white rounded-2xl border border-stone-200 flex items-center justify-center gap-2 py-16 shadow-sm">
         <Loader2 size={20} className="animate-spin text-stone-400" />
@@ -93,13 +76,10 @@ export default function PdfPreviewClient({
     );
   }
 
-  // Destructure only after the dynamic import resolved
-  const { Document, Page } = pdfMod;
-
   return (
     <div className="bg-white rounded-2xl border border-stone-200 overflow-hidden shadow-sm">
 
-      {/* ── Toolbar ────────────────────────────────────────────────────────── */}
+      {/* Toolbar */}
       <div className="flex items-center justify-between px-4 py-2.5 bg-stone-50 border-b border-stone-100">
         <div className="flex items-center gap-1">
           <button
@@ -111,12 +91,12 @@ export default function PdfPreviewClient({
           </button>
           <span className="text-xs text-stone-500 tabular-nums px-1 min-w-20 text-center">
             {totalPages
-              ? `Page ${page} of ${isPremium ? `${maxPages}*` : totalPages}`
+              ? `Page ${page} of ${isPremium ? `${Math.min(maxPages, totalPages)}*` : totalPages}`
               : "Loading…"}
           </span>
           <button
             onClick={goNext}
-            disabled={page >= effectiveMax}
+            disabled={!totalPages || page >= effectiveMax}
             className="p-1.5 rounded-lg hover:bg-stone-200 disabled:opacity-30 transition-colors"
           >
             <ChevronRight size={16} className="text-stone-600" />
@@ -142,7 +122,7 @@ export default function PdfPreviewClient({
         </div>
       </div>
 
-      {/* ── PDF canvas ─────────────────────────────────────────────────────── */}
+      {/* PDF canvas */}
       <div
         ref={containerRef}
         className="relative bg-stone-100 overflow-auto flex justify-center"
@@ -154,7 +134,7 @@ export default function PdfPreviewClient({
           loading={
             <div className="absolute inset-0 flex flex-col items-center justify-center gap-2">
               <Loader2 size={24} className="animate-spin text-stone-400" />
-              <p className="text-xs text-stone-400">Loading preview…</p>
+              <p className="text-xs text-stone-400">Loading PDF…</p>
             </div>
           }
           error={
@@ -184,6 +164,7 @@ export default function PdfPreviewClient({
           />
         </Document>
 
+        {/* Premium / limit overlay */}
         {showOverlay && (
           <div className="absolute inset-0 bg-stone-50/90 backdrop-blur-sm flex flex-col items-center justify-center gap-4 p-6 z-10">
             <div className="w-14 h-14 bg-amber-100 rounded-2xl flex items-center justify-center">

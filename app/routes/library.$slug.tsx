@@ -1,29 +1,3 @@
-// ─────────────────────────────────────────────────────────────────────────────
-// SETUP — run once in your project root:
-//
-//   npm install react-pdf
-//
-// Then add this to your vite.config.ts (or equivalent bundler config) so the
-// PDF.js worker is copied to your public folder at build time:
-//
-//   import { viteStaticCopy } from "vite-plugin-static-copy";
-//
-//   plugins: [
-//     viteStaticCopy({
-//       targets: [{
-//         src: "node_modules/pdfjs-dist/build/pdf.worker.min.mjs",
-//         dest: ".",
-//       }],
-//     }),
-//   ],
-//
-// And install that helper:  npm install -D vite-plugin-static-copy
-//
-// If you're on React Router v7 / Remix, also add this to your entry.client.tsx:
-//   import { pdfjs } from "react-pdf";
-//   pdfjs.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.mjs";
-// ─────────────────────────────────────────────────────────────────────────────
-
 import { useState, useEffect } from "react";
 import { useLoaderData, useFetcher, Link } from "react-router";
 import {
@@ -36,8 +10,9 @@ import { resource, resourceCategory, resourceBookmark, resourceDownload } from "
 import { requireAuth } from "~/lib/auth";
 import { eq, and, sql } from "drizzle-orm";
 import type { Route } from "./+types/library.$slug";
-// PdfPreviewClient uses dynamic import() internally — safe to import statically here
-import PdfPreviewClient from "~/components/library/PdfViewer";
+import { lazy, Suspense } from "react";
+
+const PdfPreviewClient = lazy(() => import("~/components/library/PdfViewer"));
 
 // ── Loader ────────────────────────────────────────────────────────────────────
 export async function loader({ params, request }: Route.LoaderArgs) {
@@ -45,28 +20,28 @@ export async function loader({ params, request }: Route.LoaderArgs) {
 
   const res = await db
     .select({
-      id:            resource.id,
-      title:         resource.title,
-      slug:          resource.slug,
-      description:   resource.description,
-      level:         resource.level,
-      subject:       resource.subject,
-      year:          resource.year,
-      edition:       resource.edition,
-      publisher:     resource.publisher,
-      authors:       resource.authors,
-      fileType:      resource.fileType,
-      fileSize:      resource.fileSize,
-      fileUrl:       resource.fileUrl,
-      thumbnailUrl:  resource.thumbnailUrl,
-      previewPages:  resource.previewPages,
-      isPublished:   resource.isPublished,
-      isPremium:     resource.isPremium,
+      id: resource.id,
+      title: resource.title,
+      slug: resource.slug,
+      description: resource.description,
+      level: resource.level,
+      subject: resource.subject,
+      year: resource.year,
+      edition: resource.edition,
+      publisher: resource.publisher,
+      authors: resource.authors,
+      fileType: resource.fileType,
+      fileSize: resource.fileSize,
+      fileUrl: resource.fileUrl,
+      thumbnailUrl: resource.thumbnailUrl,
+      previewPages: resource.previewPages,
+      isPublished: resource.isPublished,
+      isPremium: resource.isPremium,
       downloadCount: resource.downloadCount,
-      createdAt:     resource.createdAt,
-      categoryName:  resourceCategory.name,
-      categorySlug:  resourceCategory.slug,
-      categoryIcon:  resourceCategory.icon,
+      createdAt: resource.createdAt,
+      categoryName: resourceCategory.name,
+      categorySlug: resourceCategory.slug,
+      categoryIcon: resourceCategory.icon,
     })
     .from(resource)
     .innerJoin(resourceCategory, eq(resource.categoryId, resourceCategory.id))
@@ -95,14 +70,14 @@ export async function loader({ params, request }: Route.LoaderArgs) {
 
   const related = await db
     .select({
-      id:            resource.id,
-      title:         resource.title,
-      slug:          resource.slug,
-      fileType:      resource.fileType,
+      id: resource.id,
+      title: resource.title,
+      slug: resource.slug,
+      fileType: resource.fileType,
       downloadCount: resource.downloadCount,
-      isPremium:     resource.isPremium,
-      year:          resource.year,
-      categoryIcon:  resourceCategory.icon,
+      isPremium: resource.isPremium,
+      year: resource.year,
+      categoryIcon: resourceCategory.icon,
     })
     .from(resource)
     .innerJoin(resourceCategory, eq(resource.categoryId, resourceCategory.id))
@@ -110,15 +85,15 @@ export async function loader({ params, request }: Route.LoaderArgs) {
       and(
         eq(resource.isPublished, true),
         eq(resource.subject, r.subject),
-        eq(resource.level,   r.level),
+        eq(resource.level, r.level),
         sql`${resource.id} != ${r.id}`,
       )
     )
     .limit(4);
 
   return {
-    resource:      r,
-    isBookmarked:  !!bookmarkRow,
+    resource: r,
+    isBookmarked: !!bookmarkRow,
     hasDownloaded: !!downloadRow,
     related,
     currentUserId: session.user.id,
@@ -139,13 +114,13 @@ const LEVEL_LABEL: Record<string, string> = {
 const LEVEL_STYLE: Record<string, string> = {
   olevel: "bg-sky-100 text-sky-800 border-sky-200",
   alevel: "bg-violet-100 text-violet-800 border-violet-200",
-  both:   "bg-stone-100 text-stone-700 border-stone-200",
+  both: "bg-stone-100 text-stone-700 border-stone-200",
 };
 
 const FILE_LABEL: Record<string, string> = {
   pdf: "PDF Document", zip: "ZIP Archive",
   doc: "Word Document", docx: "Word Document",
-  ppt: "PowerPoint",   pptx: "PowerPoint",
+  ppt: "PowerPoint", pptx: "PowerPoint",
 };
 
 // ── Page ──────────────────────────────────────────────────────────────────────
@@ -158,15 +133,15 @@ export default function ResourceDetailPage() {
 
   const [bookmarked, setBookmarked] = useState(isBookmarked);
   const [downloaded, setDownloaded] = useState(hasDownloaded);
-  const [copyDone,   setCopyDone]   = useState(false);
+  const [copyDone, setCopyDone] = useState(false);
 
   useEffect(() => {
     if (downloadFetcher.data?.success && downloadFetcher.data.downloadUrl) {
-      const a    = document.createElement("a");
-      a.href     = downloadFetcher.data.downloadUrl;
+      const a = document.createElement("a");
+      a.href = downloadFetcher.data.downloadUrl;
       a.download = downloadFetcher.data.fileName;
-      a.target   = "_blank";
-      a.rel      = "noopener noreferrer";
+      a.target = "_blank";
+      a.rel = "noopener noreferrer";
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
@@ -202,7 +177,7 @@ export default function ResourceDetailPage() {
   };
 
   const isDownloading = downloadFetcher.state !== "idle";
-  const size          = formatBytes(r.fileSize);
+  const size = formatBytes(r.fileSize);
 
   return (
     <div
@@ -231,11 +206,10 @@ export default function ResourceDetailPage() {
             </button>
             <button
               onClick={handleBookmark}
-              className={`p-2 rounded-xl transition-all ${
-                bookmarked
+              className={`p-2 rounded-xl transition-all ${bookmarked
                   ? "text-amber-500 bg-amber-50"
                   : "text-stone-400 hover:text-amber-500 hover:bg-amber-50"
-              }`}
+                }`}
               aria-label={bookmarked ? "Remove bookmark" : "Bookmark"}
             >
               <Bookmark size={17} className={bookmarked ? "fill-current" : ""} />
@@ -308,17 +282,16 @@ export default function ResourceDetailPage() {
             <button
               onClick={handleDownload}
               disabled={isDownloading}
-              className={`flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-bold transition-all active:scale-95 shadow-sm ${
-                r.isPremium
+              className={`flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-bold transition-all active:scale-95 shadow-sm ${r.isPremium
                   ? "bg-amber-500 hover:bg-amber-600 text-white disabled:opacity-60"
                   : "bg-stone-900 hover:bg-stone-800 text-white disabled:opacity-60"
-              }`}
+                }`}
             >
               {isDownloading
                 ? <><Loader2 size={15} className="animate-spin" /> Preparing…</>
                 : r.isPremium
-                ? <><Star size={15} className="fill-current" /> Unlock & Download</>
-                : <><Download size={15} /> Download Free</>}
+                  ? <><Star size={15} className="fill-current" /> Unlock & Download</>
+                  : <><Download size={15} /> Download Free</>}
             </button>
           </div>
 
@@ -345,14 +318,14 @@ export default function ResourceDetailPage() {
         {/* ── Details grid ───────────────────────────────────────────────────── */}
         <section className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           {[
-            { label: "Subject",   value: r.subject },
-            { label: "Level",     value: LEVEL_LABEL[r.level] },
-            { label: "Year",      value: r.year?.toString() },
-            { label: "Format",    value: r.fileType.toUpperCase() },
-            { label: "Size",      value: size },
-            { label: "Edition",   value: r.edition },
+            { label: "Subject", value: r.subject },
+            { label: "Level", value: LEVEL_LABEL[r.level] },
+            { label: "Year", value: r.year?.toString() },
+            { label: "Format", value: r.fileType.toUpperCase() },
+            { label: "Size", value: size },
+            { label: "Edition", value: r.edition },
             { label: "Publisher", value: r.publisher },
-            { label: "Authors",   value: r.authors },
+            { label: "Authors", value: r.authors },
           ]
             .filter(d => d.value)
             .map(d => (
@@ -371,12 +344,19 @@ export default function ResourceDetailPage() {
             <h2 className="text-[10px] font-bold tracking-widest text-stone-400 uppercase">
               Preview
             </h2>
-            <PdfPreviewClient
-              fileUrl={r.fileUrl}
-              maxPages={r.isPremium ? 2 : (r.previewPages ?? 5)}
-              isPremium={r.isPremium as boolean}
-              onDownload={handleDownload}
-            />
+            <Suspense fallback={
+              <div className="bg-white rounded-2xl border border-stone-200 flex items-center justify-center gap-2 py-16">
+                <Loader2 size={20} className="animate-spin text-stone-400" />
+                <span className="text-sm text-stone-400">Loading preview…</span>
+              </div>
+            }>
+              <PdfPreviewClient
+                fileUrl={r.fileUrl}
+                maxPages={r.isPremium ? 2 : (r.previewPages ?? 5)}
+                isPremium={r.isPremium as boolean}
+                onDownload={handleDownload}
+              />
+            </Suspense>
           </section>
         )}
 
