@@ -67,8 +67,6 @@ export async function action({ request }: Route.ActionArgs) {
     sql.raw(`NOTIFY new_study_activity, '${notifyPayload}'`)
   );
 
-  console.log("activity created",{newActivity})
-
   
 
   return {

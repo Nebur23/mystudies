@@ -17,14 +17,12 @@ export async function action({ request }: Route.ActionArgs) {
   const session = await requireAuth(request);
   const formData = await request.formData();
 
-  console.log("connection data", formData)
   const validated = connectionActionSchema.safeParse(Object.fromEntries(formData));
 
   if (!validated.success) {
     return Response.json({ errors: "Invalid request", details: formatZodErrors(validated.error.flatten().fieldErrors) }, { status: 400 });
   }
 
-  console.log(">>valided data", validated.data)
 
   const { action, targetUserId, context } = validated.data;
   const currentUserId = session.user.id;

@@ -19,6 +19,7 @@ export default [
   route("api/courses/progress", "routes/api.courses.progress.ts"),
   route("api/library/analytics", "routes/api.library.analytics.ts"),
   route("api/library/download", "routes/api.library.download.ts"),
+  route("api/library/proxy/:fileKey", "routes/api.library.proxy.$fileKey.ts"),
 
 
   layout("routes/appLayout.tsx", [

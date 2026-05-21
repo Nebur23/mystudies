@@ -47,7 +47,7 @@ export function FeedComposer({ currentUser, onActivityCreated }: Props) {
 
   useEffect(() => {
     if (fetcher.state === "idle" && fetcher.data?.success) {
-    console.log("data sucess")
+    
       onActivityCreated?.(fetcher.data.activity);
       setContent({});
       setExpanded(false);

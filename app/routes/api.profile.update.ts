@@ -7,6 +7,7 @@ import { calculateProfileCompletion, generateUsername } from "~/utils/profileCom
 import { z } from "zod";
 import type { Route } from "./+types/api.profile.update";
 import { formatZodErrors } from "~/utils/zod";
+import { deleteUploadThingFiles } from "~/utils/uploadthing-delete";
 
 // ─── Coercion helpers ─────────────────────────────────────────────────────────
 //
@@ -104,7 +105,7 @@ export async function action({ request }: Route.ActionArgs) {
 
   const formData = await request.formData();
 
- // console.log("Received form data:", Object.fromEntries(formData.entries())); // Debug log to inspect incoming data
+  // console.log("Received form data:", Object.fromEntries(formData.entries())); // Debug log to inspect incoming data
 
   const rawData = Object.fromEntries(formData);
 
@@ -123,7 +124,7 @@ export async function action({ request }: Route.ActionArgs) {
 
   const data = validated.data;
 
- // console.log("Validated data:", data); // Debug log to inspect validated data
+  // console.log("Validated data:", data); // Debug log to inspect validated data
 
   // ── Username uniqueness ─────────────────────────────────────────────────────
   if (data.username) {
@@ -158,6 +159,21 @@ export async function action({ request }: Route.ActionArgs) {
     );
   }
 
+  if (data.avatarUrl) {
+    // Fetch current avatar URL before overwriting
+    const profile = await db.query.studentProfile.findFirst({
+      where: eq(studentProfile.userId, session.user.id),
+      columns: { avatarUrl: true },
+    });
+
+    console.log("trying to [delete url]")
+
+    if (profile?.avatarUrl?.includes("yu7tr24azt.ufs.sh")) {
+      await deleteUploadThingFiles(profile.avatarUrl);
+    }
+     console.log("deleted url")
+  }
+
   // ── Upsert ──────────────────────────────────────────────────────────────────
   await db
     .insert(studentProfile)
@@ -174,20 +190,19 @@ export async function action({ request }: Route.ActionArgs) {
       set: updateData,
     });
 
-let updatedUser = null;
+  let updatedUser = null;
 
   if (data.avatarUrl) {
-
-   updatedUser = await auth.api.updateUser({
+    updatedUser = await auth.api.updateUser({
       body: {
         image: data.avatarUrl,
         // Additional custom fields defined in your schema
       },
-      headers: request.headers , // Requires session headers to authenticate the request
+      headers: request.headers, // Requires session headers to authenticate the request
       returnHeaders: true, // Return updated session headers if the avatar URL is part of the session data
     });
 
-    
+
   }
 
 
@@ -215,5 +230,5 @@ let updatedUser = null;
   });
 
 
-  return redirect(`/profile/${finalProfile?.username ?? "me"}`, {headers: updatedUser?.headers }); // Pass updated session headers if available
+  return redirect(`/profile/${finalProfile?.username ?? "me"}`, { headers: updatedUser?.headers }); // Pass updated session headers if available
 }

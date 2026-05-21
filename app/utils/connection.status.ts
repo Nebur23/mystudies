@@ -62,7 +62,7 @@ export async function ConnectionStatus({ params, request }: { params: { username
     direction;
   }
 
-  console.log("Connection Status:", { status, canConnect,direction });
+  //console.log("Connection Status:", { status, canConnect,direction });
 
   return {
     status,

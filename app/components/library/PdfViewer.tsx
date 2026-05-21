@@ -3,7 +3,7 @@ import {
   ChevronLeft, ChevronRight, ZoomIn, ZoomOut,
   Download, Loader2, AlertCircle, Star,
 } from "lucide-react";
-import { Document, Page, pdfjs } from "react-pdf";
+import { Document, Page } from "react-pdf";
 import "react-pdf/dist/Page/AnnotationLayer.css";
 import "react-pdf/dist/Page/TextLayer.css";
 
@@ -15,6 +15,15 @@ interface Props {
   maxPages:   number;
   isPremium:  boolean;
   onDownload: () => void;
+}
+
+function toProxyUrl(fileUrl: string): string {
+  try {
+    const key = new URL(fileUrl).pathname.split("/").at(-1);
+    return key ? `/api/library/proxy/${key}` : fileUrl;
+  } catch {
+    return fileUrl;
+  }
 }
 
 export default function PdfPreviewClient({
@@ -129,7 +138,7 @@ export default function PdfPreviewClient({
         style={{ minHeight: 480 }}
       >
         <Document
-          file={fileUrl}
+          file={toProxyUrl(fileUrl)}
           onLoadSuccess={onLoadSuccess}
           loading={
             <div className="absolute inset-0 flex flex-col items-center justify-center gap-2">

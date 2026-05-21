@@ -24,7 +24,7 @@ import useSWR from "swr";
 import { UAParser } from "ua-parser-js";
 import type { UAParser as UAParsERType } from "ua-parser-js";
 import { MobileIcon } from "@radix-ui/react-icons";
-import { useUploadThing } from "~/utils/uploadthing";
+import { useCompressedUpload } from "~/utils/uploadthing";
 
 // ─────────────────────────────────────────────────────────────
 // LOADER
@@ -246,7 +246,7 @@ function ProfileTab({ profile, user }: { profile: any; user: any }) {
 
 
 
-  const { startUpload, routeConfig } = useUploadThing("imageUploader", {
+  const { startUpload } = useCompressedUpload("imageUploader", {
 
     onClientUploadComplete: () => {
       // alert("uploaded successfully!");

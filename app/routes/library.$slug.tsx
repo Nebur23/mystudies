@@ -11,6 +11,26 @@ import { requireAuth } from "~/lib/auth";
 import { eq, and, sql } from "drizzle-orm";
 import type { Route } from "./+types/library.$slug";
 import { lazy, Suspense } from "react";
+import { data } from "react-router";
+// ── SVG category illustrations ────────────────────────────────────────────────
+import Paper from "~/assets/library/paper.svg";
+import Textbooks from "~/assets/library/Placeholder book.svg";
+import StudyGuide from "~/assets/library/guide.svg";
+import Pamphlet from "~/assets/library/pamphlet.svg";
+import MakingSchema from "~/assets/library/solutions.svg";
+import Syllabus from "~/assets/library/syllabus.svg";
+import Practice from "~/assets/library/Yellow Quiz.svg";
+
+// ✅ Map slug → illustration
+const CAT_ILLUSTRATION: Record<string, string> = {
+  "past-papers": Paper,
+  "marking-schemes": MakingSchema,
+  "textbooks": Textbooks,
+  "study-guides": StudyGuide,
+  "practice-questions": Practice,
+  "syllabus": Syllabus,
+  "pamphlets": Pamphlet,
+};
 
 const PdfPreviewClient = lazy(() => import("~/components/library/PdfViewer"));
 
@@ -91,13 +111,16 @@ export async function loader({ params, request }: Route.LoaderArgs) {
     )
     .limit(4);
 
-  return {
-    resource: r,
-    isBookmarked: !!bookmarkRow,
-    hasDownloaded: !!downloadRow,
-    related,
-    currentUserId: session.user.id,
-  };
+  return data(
+    // ✅ plain object — RR7 infers types from this correctly
+    { resource: r, isBookmarked: !!bookmarkRow, hasDownloaded: !!downloadRow, related },
+    {
+      headers: {
+        // Cache detail page for 5 minutes, stale-while-revalidate for 1 hour
+        "cache-control": "public, max-age=300, stale-while-revalidate=3600",
+      },
+    }
+  );
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -207,8 +230,8 @@ export default function ResourceDetailPage() {
             <button
               onClick={handleBookmark}
               className={`p-2 rounded-xl transition-all ${bookmarked
-                  ? "text-amber-500 bg-amber-50"
-                  : "text-stone-400 hover:text-amber-500 hover:bg-amber-50"
+                ? "text-amber-500 bg-amber-50"
+                : "text-stone-400 hover:text-amber-500 hover:bg-amber-50"
                 }`}
               aria-label={bookmarked ? "Remove bookmark" : "Bookmark"}
             >
@@ -232,7 +255,15 @@ export default function ResourceDetailPage() {
 
           <div className="flex-1 min-w-0 space-y-3">
             <p className="text-xs text-stone-400 font-medium">
-              {r.categoryIcon} {r.categoryName}
+              {CAT_ILLUSTRATION[r.categorySlug] && (
+                <img
+                  src={CAT_ILLUSTRATION[r.categorySlug]}
+                  alt=""
+                  className="w-8 h-8 object-contain"
+                />
+              )}
+
+              {r.categoryName}
             </p>
             <h1 className="text-xl sm:text-2xl font-bold text-stone-900 leading-snug">
               {r.title}
@@ -283,8 +314,8 @@ export default function ResourceDetailPage() {
               onClick={handleDownload}
               disabled={isDownloading}
               className={`flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-bold transition-all active:scale-95 shadow-sm ${r.isPremium
-                  ? "bg-amber-500 hover:bg-amber-600 text-white disabled:opacity-60"
-                  : "bg-stone-900 hover:bg-stone-800 text-white disabled:opacity-60"
+                ? "bg-amber-500 hover:bg-amber-600 text-white disabled:opacity-60"
+                : "bg-stone-900 hover:bg-stone-800 text-white disabled:opacity-60"
                 }`}
             >
               {isDownloading

@@ -11,7 +11,7 @@ export function parsePaperId(id: string) {
 
 export function extractPaperId(input: string): string | null {
 
-  console.log("Extracting paper ID from input:", input);
+  //console.log("Extracting paper ID from input:", input);
   const match = input.match(/paper\s*(\d+)/i);
   
   if (!match) return null;

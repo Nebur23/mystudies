@@ -9,7 +9,7 @@ import { db } from "~/db";
 import { resource, resourceCategory } from "~/db/schema/library";
 import { asc } from "drizzle-orm";
 import type { Route } from "./+types/admin.library.upload";
-import { useUploadThing } from "~/utils/uploadthing";
+import { useCompressedUpload } from "~/utils/uploadthing";
 import { toast } from "sonner";
 
 const SUBJECTS = [
@@ -19,7 +19,7 @@ const SUBJECTS = [
 ];
 
 const ACCEPTED_TYPES = ".pdf,.doc,.docx,.zip,.ppt,.pptx";
-const MAX_FILE_MB = 50;
+const MAX_FILE_MB = 256;
 
 // ── Loader ────────────────────────────────────────────────────────────────────
 export async function loader({ request }: Route.LoaderArgs) {
@@ -129,7 +129,7 @@ export default function AdminUploadPage() {
     });
 
     // ── UploadThing — same hook/router as course thumbnail ────────────────────
-    const { startUpload: startThumbnailUpload } = useUploadThing("imageUploader", {
+    const { startUpload: startThumbnailUpload } = useCompressedUpload("imageUploader", {
         onUploadBegin: () => setIsUploadingThumb(true),
         onClientUploadComplete: () => setIsUploadingThumb(false),
         onUploadError: () => {
@@ -138,7 +138,7 @@ export default function AdminUploadPage() {
         },
     });
 
-    const { startUpload: startResourceUpload } = useUploadThing("resourceUploader", {
+    const { startUpload: startResourceUpload } = useCompressedUpload("resourceUploader", {
         onUploadBegin: () => setIsUploadingResource(true),
         onClientUploadComplete: () => setIsUploadingResource(false),
         onUploadError: () => {
@@ -333,7 +333,7 @@ export default function AdminUploadPage() {
 
                         {!thumbnailPreview ? (
                             <div
-                                className="flex flex-col items-center justify-center gap-2.5 py-8 px-4 min-h-[130px]"
+                                className="flex flex-col items-center justify-center gap-2.5 py-8 px-4 min-h-32.5"
                                 onClick={() => thumbnailInputRef.current?.click()}
                             >
                                 <div className="w-10 h-10 rounded-full bg-zinc-800 border border-zinc-700 flex items-center justify-center">
@@ -373,8 +373,8 @@ export default function AdminUploadPage() {
                                     </button>
                                 </div>
                                 {/* File info bar */}
-                                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent px-3 py-2 flex justify-between items-end z-10 pointer-events-none">
-                                    <span className="text-[11px] text-zinc-300 truncate max-w-[180px]">{thumbnailFile?.name}</span>
+                                <div className="absolute bottom-0 left-0 right-0 bg-linear-to-t from-black/60 to-transparent px-3 py-2 flex justify-between items-end z-10 pointer-events-none">
+                                    <span className="text-[11px] text-zinc-300 truncate max-w-45">{thumbnailFile?.name}</span>
                                     <span className="text-[10px] text-zinc-500">{thumbnailFile ? formatBytes(thumbnailFile.size) : ""}</span>
                                 </div>
                             </div>

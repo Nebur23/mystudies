@@ -32,7 +32,7 @@ export function ProfileEditor({ profile }: Props) {
               // Handle upload via Uploadthing in a real implementation
               onChange={(e) => {
                 // TODO: Implement Uploadthing upload
-                console.log("File selected:", e.target.files?.[0]);
+                //console.log("File selected:", e.target.files?.[0]);
               }}
             />
           </label>

@@ -96,7 +96,6 @@ export function ResourceCard({ resource, isBookmarked, onBookmarkToggle }: Props
   return (
     <div
       className="group bg-white rounded-2xl border border-stone-200 hover:border-stone-300 hover:shadow-md transition-all duration-200 overflow-hidden"
-      style={{ fontFamily: "system-ui, sans-serif" }}
     >
       <div className="flex gap-4 p-4">
 
@@ -121,7 +120,6 @@ export function ResourceCard({ resource, isBookmarked, onBookmarkToggle }: Props
           <div className="flex items-start gap-2">
             <h3
               className="flex-1 font-semibold text-stone-900 leading-snug line-clamp-2 text-sm group-hover:text-amber-700 transition-colors"
-              style={{ fontFamily: "'Lora', Georgia, serif" }}
             >
               {resource.title}
             </h3>

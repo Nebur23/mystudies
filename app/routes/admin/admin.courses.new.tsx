@@ -11,7 +11,7 @@ import { course, courseModule, courseLesson } from "~/db/schema/courses";
 import { requireAuth } from "~/lib/auth";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { YoutubeIcon } from "@hugeicons/core-free-icons";
-import { useUploadThing } from "~/utils/uploadthing";
+import { useCompressedUpload } from "~/utils/uploadthing";
 import { toast } from "sonner";
 import type { Route } from "./+types/admin.courses.new";
 
@@ -227,7 +227,7 @@ function handleFile(file: File) {
   };
 
   // ── Submit ──────────────────────────────────────────────────────────────────
-  const { startUpload, routeConfig } = useUploadThing("imageUploader", {
+  const { startUpload } = useCompressedUpload("imageUploader", {
 
     onClientUploadComplete: () => {
       // alert("uploaded successfully!");
@@ -401,7 +401,7 @@ function handleFile(file: File) {
             />
 
             {!imagePreview ? (
-              <div className="flex flex-col items-center justify-center gap-2.5 py-8 px-4 min-h-[140px]">
+              <div className="flex flex-col items-center justify-center gap-2.5 py-8 px-4 min-h-35">
                 <div className="w-11 h-11 rounded-full bg-zinc-800 border border-zinc-700 flex items-center justify-center">
                   <Upload size={16} className="text-zinc-400" />
                 </div>
@@ -429,8 +429,8 @@ function handleFile(file: File) {
                     Remove
                   </button>
                 </div>
-                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent px-3 py-2 flex justify-between items-end">
-                  <span className="text-[11px] text-zinc-300 font-medium truncate max-w-[180px]">{image?.name}</span>
+                <div className="absolute bottom-0 left-0 right-0 bg-linear-to-t from-black/60 to-transparent px-3 py-2 flex justify-between items-end">
+                  <span className="text-[11px] text-zinc-300 font-medium truncate max-w-45">{image?.name}</span>
                   <span className="text-[10px] text-zinc-500">{image ? formatBytes(image.size) : ""}</span>
                 </div>
               </div>

@@ -30,22 +30,22 @@ const uploadRouter = {
       //console.log("Upload complete for userId:", metadata.userId);
       //console.log("file url", file.ufsUrl);
     }),
-      // ✅ new — library resource files (PDF, DOC, ZIP, PPT)
+  // ✅ new — library resource files (PDF, DOC, ZIP, PPT)
   resourceUploader: f({
-    pdf:         { maxFileSize: "64MB", maxFileCount: 1 },
-    "application/zip":                  { maxFileSize: "64MB", maxFileCount: 1 },
-    "application/msword":               { maxFileSize: "64MB", maxFileCount: 1 },
-    "application/vnd.openxmlformats-officedocument.wordprocessingml.document":   { maxFileSize: "64MB", maxFileCount: 1 },
-    "application/vnd.ms-powerpoint":    { maxFileSize: "64MB", maxFileCount: 1 },
+    pdf: { maxFileSize: "256MB", maxFileCount: 1 },
+    "application/zip": { maxFileSize: "64MB", maxFileCount: 1 },
+    "application/msword": { maxFileSize: "64MB", maxFileCount: 1 },
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document": { maxFileSize: "64MB", maxFileCount: 1 },
+    "application/vnd.ms-powerpoint": { maxFileSize: "64MB", maxFileCount: 1 },
     "application/vnd.openxmlformats-officedocument.presentationml.presentation": { maxFileSize: "64MB", maxFileCount: 1 },
   })
-    .middleware(async ({  }) => {
+    .middleware(async ({ }) => {
       return {};
     })
     .onUploadComplete(async ({ file }) => {
       console.log("Resource uploaded:", file.ufsUrl);
     }),
-  
+
 } satisfies FileRouter;
 
 export type UploadRouter = typeof uploadRouter;
