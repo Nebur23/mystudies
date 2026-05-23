@@ -30,7 +30,7 @@ async function handleLike(formData: FormData, likerId: string) {
 
   if (action === "add") {
     try {
-      await db.insert(activityLike).values({ activityId, userId: likerId });
+      await db.insert(activityLike).values({ activityId, userId: likerId }).onConflictDoNothing();
 
       // Increment denormalized count
       await db

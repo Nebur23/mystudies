@@ -209,3 +209,24 @@ body {
     animation: none;
   }
 }
+
+/* ── Native mobile tap highlight ──────────────────────────────────────────── */
+
+/* Remove default browser tap flash */
+* { -webkit-tap-highlight-color: transparent; }
+
+/* Apply our own subtle press effect to all interactive elements */
+button:active,
+a:active,
+[role="button"]:active {
+  opacity: 0.82;
+  transform: scale(0.985);
+  transition: opacity 80ms, transform 80ms;
+}
+
+/* Slightly stronger for card-style elements */
+.pressable-card:active {
+  opacity: 0.75;
+  transform: scale(0.97);
+  transition: opacity 60ms, transform 60ms;
+}

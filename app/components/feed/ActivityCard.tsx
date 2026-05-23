@@ -5,6 +5,7 @@ import {
   BookOpen, Trophy, Flame, Star,
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
+import { Pressable } from "../ui/Pressable";
 
 type ActivityType =
   | "quiz_completed" | "badge_earned" | "streak_milestone"
@@ -59,14 +60,6 @@ export function ActivityCard({ activity, currentUserId, onLike, onComment }: Pro
   const loadFetcher = useFetcher<{ comments: Comment[]; hasNextPage: boolean }>();
 
   const isOwner = currentUserId === activity.userId;
-
-  // Optimistic like state
-  // const optimisticLiked = likeFetcher.state !== "idle"
-  //   ? !activity.isLiked
-  //   : activity.isLiked;
-  // const optimisticCount = likeFetcher.state !== "idle"
-  //   ? activity.likesCount + (activity.isLiked ? -1 : 1)
-  //   : activity.likesCount;
 
   const optimisticLiked = activity.isLiked;
   const optimisticCount = activity.likesCount;
@@ -244,24 +237,29 @@ export function ActivityCard({ activity, currentUserId, onLike, onComment }: Pro
 
       {/* Engagement Bar */}
       <div className="flex items-center gap-4 px-4 py-3 border-t border-slate-100">
-        <button
+
+
+        <Pressable 
+
           onClick={handleLike}
           disabled={!currentUserId || likeFetcher.state !== "idle"}
           className={`flex items-center gap-1.5 text-sm transition-colors disabled:cursor-not-allowed ${optimisticLiked ? "text-red-500" : "text-slate-600 hover:text-red-500"
             }`}
         >
-          <Heart size={16} className={optimisticLiked ? "fill-current" : ""} />
-          <span>{Math.max(0, optimisticCount)}</span>
-        </button>
 
-        <button
+          <Heart size={16} className={optimisticLiked ? "fill-current" : ""} />
+
+          <span>{Math.max(0, optimisticCount)}</span>
+
+        </Pressable>
+        <Pressable
           onClick={handleToggleComments}
           className={`flex items-center gap-1.5 text-sm transition-colors ${showComments ? "text-purple-600" : "text-slate-600 hover:text-purple-600"
             }`}
         >
           <MessageCircle size={16} />
           <span>{activity.commentsCount}</span>
-        </button>
+        </Pressable>
 
         <button className="flex items-center gap-1.5 text-sm text-slate-600 hover:text-slate-800 transition-colors ml-auto">
           <Share2 size={16} />

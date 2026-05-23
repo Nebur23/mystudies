@@ -9,6 +9,7 @@ import {
   Check,
   X,
 } from "lucide-react";
+import { Pressable } from "../ui/Pressable";
 
 type ConnectionStatus =
   | "none"
@@ -160,30 +161,30 @@ export function ConnectButton({
 
   if (status === "blocked") {
     return (
-      <button
+      <Pressable
         disabled
         className={`${baseButton} bg-slate-200 text-slate-500`}
       >
         <Shield size={16} />
         Blocked
-      </button>
+      </Pressable>
     );
   }
 
   if (status === "accepted") {
     return (
       <div className="relative">
-        <button
+        <Pressable
           onClick={() => setShowMenu((prev) => !prev)}
           className={`${baseButton} bg-green-100 text-green-700 border border-green-300 hover:bg-green-200`}
         >
           <UserCheck size={16} />
           Connected
-        </button>
+        </Pressable>
 
         {showMenu && (
           <div className="absolute -right-8 mt-2 w-48 bg-white rounded-xl shadow-lg border border-slate-200 py-1 z-10">
-            <button
+            <Pressable
               onClick={() => handleAction("unfollow")}
               disabled={isLoading("unfollow")}
               className="w-full flex items-center gap-2 px-4 py-2 text-left text-sm text-slate-700 hover:bg-slate-50"
@@ -197,9 +198,9 @@ export function ConnectButton({
                 <UserX size={14} />
               )}
               Unfollow
-            </button>
+            </Pressable>
 
-            <button
+            <Pressable
               onClick={() => handleAction("block")}
               disabled={isLoading("block")}
               className="w-full flex items-center gap-2 px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50"
@@ -213,7 +214,7 @@ export function ConnectButton({
                 <Shield size={14} />
               )}
               Block
-            </button>
+            </Pressable>
           </div>
         )}
       </div>
@@ -223,7 +224,7 @@ export function ConnectButton({
   if (status === "pending") {
     if (direction === "outgoing") {
       return (
-        <button
+        <Pressable
           disabled={isLoading("decline")}
           onClick={() => handleAction("decline")}
           className={`${baseButton} bg-amber-100 text-amber-700 border border-amber-300 hover:bg-amber-200`}
@@ -238,14 +239,14 @@ export function ConnectButton({
           )}
 
           Request Sent
-        </button>
+        </Pressable>
       );
     }
 
     if (direction === "incoming") {
       return (
         <div className="flex items-center gap-2">
-          <button
+          <Pressable
             disabled={loadingAction !== null}
             onClick={() => handleAction("accept")}
             className={`${baseButton} bg-green-100 text-green-700 border border-green-300 hover:bg-green-200`}
@@ -260,9 +261,9 @@ export function ConnectButton({
             )}
 
             Accept
-          </button>
+          </Pressable>
 
-          <button
+          <Pressable
             disabled={loadingAction !== null}
             onClick={() => handleAction("decline")}
             className={`${baseButton} bg-red-100 text-red-700 border border-red-300 hover:bg-red-200`}
@@ -277,7 +278,7 @@ export function ConnectButton({
             )}
 
             Decline
-          </button>
+          </Pressable>
         </div>
       );
     }
@@ -285,18 +286,18 @@ export function ConnectButton({
 
   if (!initialStatus.canConnect) {
     return (
-      <button
+      <Pressable
         disabled
         className={`${baseButton} bg-slate-100 text-slate-400`}
       >
         <UserPlus size={16} />
         Requests Disabled
-      </button>
+      </Pressable>
     );
   }
 
   return (
-    <button
+    <Pressable
       onClick={() => handleAction("send")}
       disabled={isLoading("send")}
       className={`${baseButton} bg-purple-600 text-white hover:bg-purple-700 active:scale-95`}
@@ -311,6 +312,6 @@ export function ConnectButton({
       )}
 
       Connect
-    </button>
+    </Pressable>
   );
 }

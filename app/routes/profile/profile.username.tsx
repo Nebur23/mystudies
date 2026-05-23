@@ -10,6 +10,7 @@ import type { Route } from "./+types/profile.username";
 import { ConnectButton } from "~/components/connections/ConnectButton";
 import { MutualConnections } from "~/components/connections/MutualConnections";
 import { ConnectionStatus } from "~/utils/connection.status";
+import { Pressable } from "~/components/ui/Pressable";
 
 export async function loader({ params, request }: Route.LoaderArgs) {
   const { username } = params;
@@ -183,12 +184,13 @@ export default function PublicProfile() {
             {/* Action Buttons */}
             <div className="">
               {profile.canEdit ? (
-                <Link
+                <Pressable
+                as={Link}
                   to="/profile/settings"
                   className="flex items-center w-22 gap-1.5 px-3 py-2 bg-primary text-white rounded-lg text-sm font-medium hover:bg-purple-700"
                 >
                   <Edit size={14} /> Edit
-                </Link>
+                </Pressable>
               ) : (
                 <div className="flex items-center gap-2 flex-wrap">
                   <ConnectButton

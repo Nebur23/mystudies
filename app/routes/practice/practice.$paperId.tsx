@@ -8,6 +8,7 @@ import { Badge } from "~/components/ui/badge";
 import { Loader2, ChevronRight, BookOpen, Trophy, RotateCcw, AlertTriangle, CheckCircle2, XCircle, Eye, EyeOff, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 import { parsePaperId } from "~/utils/paperId";
+import { Pressable } from "~/components/ui/Pressable";
 
 // ── Loader ────────────────────────────────────────────────────────────────────
 export async function clientLoader({ params }: Route.LoaderArgs) {
@@ -98,12 +99,13 @@ function PaperHeader({
 
   return (
     <div className="flex items-center gap-3 flex-wrap mb-6">
-      <Link
+      <Pressable
+        as={Link}
         to="/practice"
         className="flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-700 transition-colors"
       >
         <ArrowLeft size={15} /> Back
-      </Link>
+      </Pressable>
       <div className="h-4 w-px bg-slate-300" />
       <Badge variant="outline" className="capitalize">{levelLabel}</Badge>
       <Badge variant="secondary" className="capitalize">{subject}</Badge>
@@ -136,7 +138,7 @@ function PaperNotFound({
           </p>
           <div className="flex gap-2 justify-center pt-2">
             <Button asChild variant="outline" size="sm">
-              <Link to="/practice">Browse Papers</Link>
+              <Pressable as={Link} to="/practice">Browse Papers</Pressable>
             </Button>
           </div>
         </CardContent>
@@ -175,10 +177,10 @@ export default function Practice() {
   }
 
   const { questions, subject, level, year, paper } = data;
-  const currentQ      = questions[quizState.currentQuestion] as Question;
-  const progress      = ((quizState.currentQuestion + 1) / questions.length) * 100;
+  const currentQ = questions[quizState.currentQuestion] as Question;
+  const progress = ((quizState.currentQuestion + 1) / questions.length) * 100;
   const currentAnswer = quizState.answerStates[quizState.currentQuestion];
-  const hasAnswered   = currentAnswer !== undefined && currentAnswer !== "unanswered";
+  const hasAnswered = currentAnswer !== undefined && currentAnswer !== "unanswered";
 
   // ── Handlers ────────────────────────────────────────────────────────────────
 
@@ -186,17 +188,17 @@ export default function Practice() {
   const handleAnswer = (selectedIndex: number) => {
     if (hasAnswered) return; // prevent double-answer
 
-    const isCorrect      = selectedIndex === currentQ.correctAnswer;
-    const newAnswers     = [...quizState.answers, selectedIndex];
+    const isCorrect = selectedIndex === currentQ.correctAnswer;
+    const newAnswers = [...quizState.answers, selectedIndex];
     const newAnswerState: AnswerState = isCorrect ? "correct" : "wrong";
-    const newStates      = [...quizState.answerStates, newAnswerState];
-    const newScore       = quizState.score + (isCorrect ? 1 : 0);
+    const newStates = [...quizState.answerStates, newAnswerState];
+    const newScore = quizState.score + (isCorrect ? 1 : 0);
 
     setQuizState(s => ({
       ...s,
-      answers:      newAnswers,
+      answers: newAnswers,
       answerStates: newStates,
-      score:        newScore,
+      score: newScore,
       showSolution: false,
     }));
   };
@@ -210,7 +212,7 @@ export default function Practice() {
       setQuizState(s => ({
         ...s,
         currentQuestion: s.currentQuestion + 1,
-        showSolution:    false,
+        showSolution: false,
       }));
     }
   };
@@ -223,12 +225,12 @@ export default function Practice() {
     setScoreSubmitted(false);
     setQuizState({
       currentQuestion: 0,
-      score:           0,
-      showResults:     false,
-      answers:         [],
-      answerStates:    [],
-      showSolution:    false,
-      startTime:       Date.now(),
+      score: 0,
+      showResults: false,
+      answers: [],
+      answerStates: [],
+      showSolution: false,
+      startTime: Date.now(),
     });
   };
 
@@ -237,12 +239,12 @@ export default function Practice() {
     setIsSubmitting(true);
     try {
       const timeSpent = Math.round((Date.now() - quizState.startTime) / 1000);
-      const response  = await fetch("/api/quiz/submit", {
-        method:  "POST",
+      const response = await fetch("/api/quiz/submit", {
+        method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          quizId:         `${year}/${level}/${subject}/${paper}`,
-          score:          quizState.score,
+          quizId: `${year}/${level}/${subject}/${paper}`,
+          score: quizState.score,
           totalQuestions: questions.length,
           timeSpent,
         }),
@@ -279,21 +281,21 @@ export default function Practice() {
   // ── Results screen ───────────────────────────────────────────────────────────
   if (quizState.showResults) {
     const percentage = Math.round((quizState.score / questions.length) * 100);
-    const timeSpent  = Math.round((Date.now() - quizState.startTime) / 1000);
-    const minutes    = Math.floor(timeSpent / 60);
-    const seconds    = timeSpent % 60;
+    const timeSpent = Math.round((Date.now() - quizState.startTime) / 1000);
+    const minutes = Math.floor(timeSpent / 60);
+    const seconds = timeSpent % 60;
 
     const gradeLabel =
       percentage >= 80 ? "Excellent!" :
-      percentage >= 60 ? "Good work" :
-      percentage >= 40 ? "Keep practising" :
-      "Needs improvement";
+        percentage >= 60 ? "Good work" :
+          percentage >= 40 ? "Keep practising" :
+            "Needs improvement";
 
     const gradeColor =
       percentage >= 80 ? "text-green-600" :
-      percentage >= 60 ? "text-blue-600" :
-      percentage >= 40 ? "text-amber-600" :
-      "text-red-600";
+        percentage >= 60 ? "text-blue-600" :
+          percentage >= 40 ? "text-amber-600" :
+            "text-red-600";
 
     return (
       <div className="min-h-screen p-4 pb-20">
@@ -337,7 +339,7 @@ export default function Practice() {
           <div className="space-y-2">
             <h3 className="font-semibold text-slate-800 text-sm px-1">Answer Review</h3>
             {(questions as Question[]).map((q, idx) => {
-              const chosen    = quizState.answers[idx];
+              const chosen = quizState.answers[idx];
               const isCorrect = chosen === q.correctAnswer;
               return (
                 <Card key={q.id} className={`border ${isCorrect ? "border-green-200 bg-green-50/50" : "border-red-200 bg-red-50/50"}`}>
@@ -346,7 +348,7 @@ export default function Practice() {
                       <div className="mt-0.5 shrink-0">
                         {isCorrect
                           ? <CheckCircle2 size={16} className="text-green-600" />
-                          : <XCircle     size={16} className="text-red-500"   />
+                          : <XCircle size={16} className="text-red-500" />
                         }
                       </div>
                       <div className="flex-1 min-w-0 space-y-1">
@@ -419,13 +421,12 @@ export default function Practice() {
                   className={`${optionStyle(index)} rounded-lg flex items-center gap-3 w-full text-sm`}
                 >
                   {/* Letter label */}
-                  <span className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold shrink-0 ${
-                    hasAnswered && index === currentQ.correctAnswer
-                      ? "bg-green-500 text-white"
-                      : hasAnswered && index === quizState.answers[quizState.currentQuestion]
+                  <span className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold shrink-0 ${hasAnswered && index === currentQ.correctAnswer
+                    ? "bg-green-500 text-white"
+                    : hasAnswered && index === quizState.answers[quizState.currentQuestion]
                       ? "bg-red-400 text-white"
                       : "bg-slate-100 text-slate-700"
-                  }`}>
+                    }`}>
                     {String.fromCharCode(65 + index)}
                   </span>
                   <LatexText text={option} />
@@ -442,11 +443,10 @@ export default function Practice() {
 
             {/* Answer feedback banner */}
             {hasAnswered && (
-              <div className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium ${
-                currentAnswer === "correct"
-                  ? "bg-green-100 text-green-800"
-                  : "bg-red-50 text-red-800"
-              }`}>
+              <div className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium ${currentAnswer === "correct"
+                ? "bg-green-100 text-green-800"
+                : "bg-red-50 text-red-800"
+                }`}>
                 {currentAnswer === "correct"
                   ? <><CheckCircle2 size={15} /> Correct!</>
                   : <><XCircle size={15} /> Incorrect — see the solution below</>
@@ -463,7 +463,7 @@ export default function Practice() {
                 >
                   {quizState.showSolution
                     ? <><EyeOff size={14} /> Hide Solution</>
-                    : <><Eye    size={14} /> Show Solution</>
+                    : <><Eye size={14} /> Show Solution</>
                   }
                 </button>
 
@@ -480,12 +480,15 @@ export default function Practice() {
 
             {/* Next / Finish button — appears only after answering */}
             {hasAnswered && (
-              <Button onClick={handleNext} className="w-full" size="lg">
-                {quizState.currentQuestion + 1 >= questions.length
-                  ? <><Trophy size={15} className="mr-2" /> See Results</>
-                  : <>Next Question <ChevronRight size={15} className="ml-1" /></>
-                }
-              </Button>
+              <Pressable className="w-full">
+
+                <Button onClick={handleNext} className="w-full" size="lg">
+                  {quizState.currentQuestion + 1 >= questions.length
+                    ? <><Trophy size={15} className="mr-2" /> See Results</>
+                    : <>Next Question <ChevronRight size={15} className="ml-1" /></>
+                  }
+                </Button>
+              </Pressable>
             )}
 
             {/* Hint while unanswered */}

@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { useNavigate } from 'react-router';
 import { extractPaperId } from '~/utils/paperId';
+import { Pressable } from '~/components/ui/Pressable';
 
 // Types
 type Level = 'olevel' | 'alevel' | null;
@@ -66,12 +67,9 @@ const SUBJECTS = {
 const YEARS = Array.from({ length: 15 }, (_, i) => 2024 - i);
 
 const PAPERS = {
-  olevel: ['Paper 1 (MCQ)', 'Paper 2 (Theory)', 'Paper 3 (Practical)'],
-  alevel: ['Paper 1 (MCQ)', 'Paper 2 (Structured)', 'Paper 3 (Practical)', 'Paper 4 (Essay)']
+  olevel: ['Paper 1 (MCQ)', /*'Paper 2 (Theory)', 'Paper 3 (Practical)'*/],
+  alevel: ['Paper 1 (MCQ)', /*'Paper 2 (Structured)', 'Paper 3 (Practical)', 'Paper 4 (Essay)'*/]
 };
-
-
-
 
 export const PracticePage: React.FC = () => {
 
@@ -119,7 +117,6 @@ export const PracticePage: React.FC = () => {
 
   const startPractice = () => {
     // Navigate to practice session
-    console.log('Starting practice:', config);
     navigate(`/practice/${config.level}-${config.subject?.toLocaleLowerCase()}-${config.year}-${extractPaperId(config.paper as string)}`);
   };
 
@@ -148,7 +145,7 @@ export const PracticePage: React.FC = () => {
             </div>
             <div className="flex-1">
               <h3 className="font-bold text-lg text-slate-900">GCE Ordinary Level</h3>
-              <p className="text-sm text-slate-600">Form 3 & 4 / Year 10 & 11</p>
+              <p className="text-sm text-slate-600">Form 3, 4 & 5</p>
             </div>
             {config.level === 'olevel' && (
               <CheckCircle2 className="text-purple-600" size={24} />
@@ -229,6 +226,7 @@ export const PracticePage: React.FC = () => {
 
         {/* Competition Mode */}
         <button
+        disabled
           onClick={() => updateConfig('mode', 'competition')}
           className={`relative p-6 rounded-2xl border-2 transition-all duration-200 text-left ${
             config.mode === 'competition'
@@ -474,12 +472,12 @@ const renderProgress = () => (
       {/* Header */}
       <header className="bg-white border-b border-slate-200 sticky top-0 z-10">
         <div className="max-w-lg mx-auto px-4 py-4 flex items-center justify-between">
-          <button
+          <Pressable
             onClick={currentStep > 1 ? handleBack : () => window.history.back()}
             className="p-2 hover:bg-slate-100 rounded-full transition-colors"
           >
             <ChevronLeft size={24} className="text-slate-700" />
-          </button>
+          </Pressable>
           <h2 className="font-bold text-lg text-slate-900">
             {currentStep === 1 && 'Practice'}
             {currentStep === 2 && 'Mode'}
@@ -501,7 +499,7 @@ const renderProgress = () => (
       <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 p-4 safe-area-pb">
         <div className="max-w-lg mx-auto">
           {currentStep < totalSteps ? (
-            <button
+            <Pressable
               onClick={handleNext}
               disabled={!canProceed()}
               className={`w-full py-4 rounded-xl font-bold text-lg transition-all ${
@@ -511,9 +509,9 @@ const renderProgress = () => (
               }`}
             >
               Continue
-            </button>
+            </Pressable>
           ) : (
-            <button
+            <Pressable
               onClick={startPractice}
               disabled={!canProceed()}
               className={`w-full py-4 rounded-xl font-bold text-lg transition-all flex items-center justify-center gap-2 ${
@@ -524,7 +522,7 @@ const renderProgress = () => (
             >
               <BookOpen size={20} />
               Start Practice
-            </button>
+            </Pressable>
           )}
           
           {/* Summary for last step */}

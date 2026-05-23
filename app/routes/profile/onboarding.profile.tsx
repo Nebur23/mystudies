@@ -8,6 +8,7 @@ import type { Route } from "./+types/onboarding.profile";
 import { studentProfile } from "~/db/schema";
 import { db } from "~/db";
 import { eq } from "drizzle-orm";
+import { Pressable } from "~/components/ui/Pressable";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -205,15 +206,14 @@ export default function ProfileSetup() {
       <div className="bg-white border-b border-slate-200 sticky top-0 z-10">
         <div className="max-w-lg mx-auto px-4 py-3 flex items-center">
           {/* FIX 8: Disable back button on step 1 and show it as inactive */}
-          <button
-            type="button"
+          <Pressable
             onClick={() => step > 1 && setStep((s) => s - 1)}
             disabled={step === 1}
             className="p-2 hover:bg-slate-100 rounded-full disabled:opacity-30 disabled:cursor-not-allowed transition-opacity"
             aria-label="Go back"
           >
             <ChevronLeft size={20} />
-          </button>
+          </Pressable>
           <div className="flex-1 mx-4">
             <div className="h-1 bg-slate-200 rounded-full overflow-hidden">
               <div
@@ -482,31 +482,29 @@ export default function ProfileSetup() {
           {/* Navigation Buttons */}
           <div className="flex gap-3 pt-4 sticky bottom-0 bg-slate-50 pb-4">
             {step > 1 && (
-              <button
-                type="button"
+              <Pressable
                 onClick={() => setStep((s) => s - 1)}
                 className="flex-1 py-3 border border-slate-300 rounded-xl font-semibold text-slate-700 hover:bg-slate-100 active:scale-95 transition-all"
               >
                 Back
-              </button>
+              </Pressable>
             )}
             {step < TOTAL_STEPS ? (
-              <button
-                type="button"
+              <Pressable
                 onClick={() => setStep((s) => s + 1)}
                 disabled={!canProceed()}
                 className="flex-1 py-3 bg-purple-600 text-white rounded-xl font-semibold hover:bg-purple-700 disabled:opacity-50 active:scale-95 transition-all"
               >
                 Continue
-              </button>
+              </Pressable>
             ) : (
-              <button
+              <Pressable
                 type="submit"
                 disabled={fetcher.state === "submitting" || !canProceed()}
                 className="flex-1 py-3 bg-purple-600 text-white rounded-xl font-semibold hover:bg-purple-700 disabled:opacity-50 active:scale-95 transition-all"
               >
                 {fetcher.state === "submitting" ? "Saving..." : "Complete Profile"}
-              </button>
+              </Pressable>
             )}
           </div>
         </fetcher.Form>
