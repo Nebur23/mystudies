@@ -404,7 +404,6 @@ export default function ResourceDetailPage() {
                   to={`/library/${rel.slug}`}
                   className="group flex items-center gap-3 bg-white rounded-xl border border-stone-200 p-3.5 hover:border-amber-300 hover:shadow-sm transition-all"
                 >
-                  <span className="text-xl shrink-0">{rel.categoryIcon ?? "📄"}</span>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-semibold text-stone-800 line-clamp-2 group-hover:text-amber-700 transition-colors leading-snug">
                       {rel.title}

@@ -5,12 +5,13 @@ import {
   Outlet,
   Scripts,
   ScrollRestoration,
+  useNavigation
 } from "react-router";
 
 import type { Route } from "./+types/root";
 import "./app.css";
-
 import { Toaster } from "./components/ui/sonner";
+import { useEffect, useRef, useState } from "react";
 
 
 
@@ -27,6 +28,68 @@ export const links: Route.LinksFunction = () => [
   },
 ];
 
+
+
+// ── Global progress bar — lives OUTSIDE Outlet, never interferes with rendering
+function NProgress() {
+  const navigation = useNavigation();
+  const [visible, setVisible] = useState(false);
+  const [width, setWidth] = useState(0);
+  const timerRef = useRef<ReturnType<typeof setTimeout>>(null);
+  const rafRef = useRef<number>(null);
+
+  useEffect(() => {
+    if (navigation.state !== "idle") {
+      timerRef.current = setTimeout(() => {
+        setVisible(true);
+        setWidth(30);
+
+        let w = 30;
+        const crawl = () => {
+          w = Math.min(w + (85 - w) * 0.05, 84);
+          setWidth(w);
+          rafRef.current = requestAnimationFrame(crawl);
+        };
+        rafRef.current = requestAnimationFrame(crawl);
+      }, 120);
+    } else {
+      clearTimeout(timerRef.current ?? undefined);
+      cancelAnimationFrame(rafRef.current!);
+
+      if (visible) {
+        setWidth(100);
+        const t = setTimeout(() => {
+          setVisible(false);
+          setWidth(0);
+        }, 300);
+        return () => clearTimeout(t);
+      }
+    }
+
+    return () => {
+      clearTimeout(timerRef.current ?? undefined);
+      cancelAnimationFrame(rafRef.current!);
+    };
+  }, [navigation.state, visible]); // ← add `visible` here
+
+  if (!visible) return null;
+
+  return (
+    <div className="fixed top-0 left-0 right-0 z-9999 h-0.5 pointer-events-none" aria-hidden>
+      <div
+        className="h-full bg-violet-500 transition-[width] ease-out"
+        style={{
+          width: `${width}%`,
+          transitionDuration: width === 100 ? "200ms" : "400ms",
+          boxShadow: "0 0 8px rgba(124,58,237,0.6)",
+        }}
+      />
+    </div>
+  );
+}
+
+
+
 export function Layout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
@@ -37,6 +100,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <Links />
       </head>
       <body>
+        <NProgress /> 
         <Toaster richColors closeButton />
         {children}
         <ScrollRestoration />
