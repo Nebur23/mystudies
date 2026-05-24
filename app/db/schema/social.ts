@@ -22,7 +22,7 @@ export const studentProfile = pgTable("student_profile", {
   username: text("username").notNull().unique(),
   bio: text("bio"),
   avatarUrl: text("avatar_url").default("https://www.gravatar.com/avatar?d=mp&f=y"),
-  coverImageUrl: text("cover_image_url"),
+  coverImageUrl: text("cover_image_url").default("https://yu7tr24azt.ufs.sh/f/StMcjRNdv9k09sR2mIfVQmW5w8uAlF3vE1kgYzn2ZIxOLfbj"),
 
   subjects: jsonb("subjects").$type<string[]>().default([]),
   targetExamYear: integer("target_exam_year"),

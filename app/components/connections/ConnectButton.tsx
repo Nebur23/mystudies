@@ -157,7 +157,7 @@ export function ConnectButton({
   }, [fetcher.state, fetcher.data]);
 
   const baseButton =
-    "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed";
+    "flex-1 flex items-center gap-2 px-4 py-2 rounded-[4px] text-sm font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed";
 
   if (status === "blocked") {
     return (
@@ -300,7 +300,7 @@ export function ConnectButton({
     <Pressable
       onClick={() => handleAction("send")}
       disabled={isLoading("send")}
-      className={`${baseButton} bg-purple-600 text-white hover:bg-purple-700 active:scale-95`}
+      className={`${baseButton} bg-primary text-white hover:bg-purple-700 active:scale-95 justify-center`}
     >
       {isLoading("send") ? (
         <Loader2

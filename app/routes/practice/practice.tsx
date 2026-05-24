@@ -504,7 +504,7 @@ const renderProgress = () => (
               disabled={!canProceed()}
               className={`w-full py-4 rounded-xl font-bold text-lg transition-all ${
                 canProceed()
-                  ? 'bg-purple-600 text-white shadow-lg hover:bg-purple-700 active:scale-95'
+                  ? 'bg-primary text-white shadow-lg hover:bg-purple-700 active:scale-95'
                   : 'bg-slate-200 text-slate-400 cursor-not-allowed'
               }`}
             >
@@ -516,7 +516,7 @@ const renderProgress = () => (
               disabled={!canProceed()}
               className={`w-full py-4 rounded-xl font-bold text-lg transition-all flex items-center justify-center gap-2 ${
                 canProceed()
-                  ? 'bg-linear-to-r from-purple-600 to-blue-600 text-white shadow-lg hover:shadow-xl active:scale-95'
+                  ? 'bg-linear-to-r from-purple-600 to-primary text-white shadow-lg hover:shadow-xl active:scale-95'
                   : 'bg-slate-200 text-slate-400 cursor-not-allowed'
               }`}
             >

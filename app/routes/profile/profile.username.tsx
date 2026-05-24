@@ -135,7 +135,7 @@ export default function PublicProfile() {
 
 
   return (
-    <div className="min-h-screen bg-slate-50 pb-24">
+    <div className="min-h-screen pb-24">
       {/* Cover Image */}
 
       <div className="h-32 md:h-48 bg-linear-to-r from-purple-500 to-blue-500 relative">
@@ -153,82 +153,44 @@ export default function PublicProfile() {
         )}
       </div>
 
+      {/* profile image */}
+      <div className="flex items-center gap-4 -mt-12 relative -right-3">
+        <div className="">
+          <div className="w-20 h-20 rounded-full bg-linear-to-br from-purple-500 to-blue-500 flex items-center justify-center text-white text-3xl font-bold border-4 border-slate-200 overflow-hidden">
 
-      <div className="max-w-lg mx-auto px-2 -mt-12 relative">
+            {profile.avatarUrl ? (
+              <img src={profile.avatarUrl} alt={profile.displayName} className="w-full h-full object-cover" />
+            ) : (
+              profile?.displayName.charAt(0)
+            )}
+          </div>
+
+
+        </div>
+
+      </div>
+
+
+      <div className="max-w-lg mx-auto px-3 ">
         {/* Profile Card */}
-        <div className="bg-white rounded-2xl p-5 shadow-sm border border-slate-200">
+        <div className="bg-white">
 
           <div className="flex flex-col">
 
-            {/* profile image */}
-            <div className="flex items-center gap-4 mb-3">
-              <div className="">
-                <div className="w-20 h-20 rounded-full bg-linear-to-br from-purple-500 to-blue-500 flex items-center justify-center text-white text-3xl font-bold border-4 border-slate-200 overflow-hidden">
-
-                  {profile.avatarUrl ? (
-                    <img src={profile.avatarUrl} alt={profile.displayName} className="w-full h-full object-cover" />
-                  ) : (
-                    profile?.displayName.charAt(0)
-                  )}
-                </div>
-
-
-              </div>
+              {/* Username */}
               <div >
                 <h1 className="font-bold text-xl text-slate-900">{profile.displayName}</h1>
                 <p className="text-sm text-slate-500">@{profile.username}</p>
-
               </div>
-            </div>
 
-            {/* Action Buttons */}
-            <div className="">
-              {profile.canEdit ? (
-                <Pressable
-                as={Link}
-                  to="/profile/settings"
-                  className="flex items-center w-22 gap-1.5 px-3 py-2 bg-primary text-white rounded-lg text-sm font-medium hover:bg-purple-700"
-                >
-                  <Edit size={14} /> Edit
-                </Pressable>
-              ) : (
-                <div className="flex items-center gap-2 flex-wrap">
-                  <ConnectButton
-                    targetUsername={profile.username}
-                    isOwner={profile.isOwner}
-                    targetUserId={profile.userId as string}
-                    initialStatus={profile.connectionStatus as {
-                      status: "none" | "pending" | "accepted" | "blocked" | "rejected";
-                      canConnect: boolean;
-                      targetUserId: string;
-                      direction: "incoming" | "outgoing" | null; 
-                    }} // from loader
-                    // canConnect={profile.privacy?.allowFriendRequests !== false}
-                    onStatusChange={(newStatus) => {
-                      // Optionally refetch mutual connections
-                    }}
-                  />
-                  {profile.privacy?.allowDirectMessages && (
-                    <button className="p-2 hover:bg-slate-100 rounded-full" aria-label="Message">
-                      <MessageCircle size={18} className="text-slate-600" />
-                    </button>
-                  )}
-
-
-                  <button className="p-2 hover:bg-slate-100 rounded-full" aria-label="Share">
-                    <Share2 size={18} className="text-slate-600" />
-                  </button>
-                </div>
-
-              )
-
-              }
-            </div>
-          </div>
+              {profile.bio && (
+                <p className="mb-2 text-xs text-slate-700 leading-relaxed">{profile.bio}</p>
+              )}
+           </div>
 
           {/* personal info */}
 
-          <div className="flex items-center gap-2 mt-5 flex-wrap">
+          <div className="flex items-center gap-2 flex-wrap">
             <span className="px-2 py-0.5 bg-purple-100 text-purple-700 rounded-full text-xs font-medium">
               {profile.level === "olevel" ? "O-Level" : "A-Level"}
             </span>
@@ -244,23 +206,66 @@ export default function PublicProfile() {
             )}
           </div>
 
-          {profile.bio && (
-            <p className="mt-4 text-sm text-slate-700 leading-relaxed">{profile.bio}</p>
-          )}
+
 
           <MutualConnections targetUsername={profile.username} />
 
           {profile.location && (
-            <div className="flex items-center gap-1.5 mt-3 text-xs text-slate-600">
+            <div className="flex items-center gap-1.5  text-xs text-slate-600">
               <MapPin size={14} /> {profile.location}
             </div>
           )}
 
           {/* Join Date */}
-          <div className="flex items-center gap-1.5 mt-2 text-xs text-slate-500">
+          <div className="flex items-center gap-1.5 text-xs text-slate-500">
             <Calendar size={14} /> Joined {profile.joinDate}
           </div>
         </div>
+
+
+          {/* Action Buttons */}
+            <div className="mt-3">
+              {profile.canEdit ? (
+                <Pressable
+                  as={Link}
+                  to="/profile/settings"
+                  className="flex items-center gap-1.5 px-3 py-2 bg-primary text-white rounded-[4px] text-sm font-medium hover:bg-purple-700"
+                >
+                  <Edit size={14} /> Edit
+                </Pressable>
+              ) : (
+                <div className="flex items-center gap-2 flex-wrap">
+                  <ConnectButton
+                    targetUsername={profile.username}
+                    isOwner={profile.isOwner}
+                    targetUserId={profile.userId as string}
+                    initialStatus={profile.connectionStatus as {
+                      status: "none" | "pending" | "accepted" | "blocked" | "rejected";
+                      canConnect: boolean;
+                      targetUserId: string;
+                      direction: "incoming" | "outgoing" | null;
+                    }} // from loader
+                    // canConnect={profile.privacy?.allowFriendRequests !== false}
+                    onStatusChange={(newStatus) => {
+                      // Optionally refetch mutual connections
+                    }}
+                  />
+                  {profile.privacy?.allowDirectMessages && (
+                    <Pressable className="p-2 hover:bg-slate-100  bg-slate-100 rounded-2xl" aria-label="Message">
+                      <MessageCircle size={18} className="text-slate-600" />
+                    </Pressable>
+                  )}
+
+
+                  <Pressable className="p-2 hover:bg-slate-100 bg-slate-100" aria-label="Share">
+                    <Share2 size={18} className="text-slate-600" />
+                  </Pressable>
+                </div>
+
+              )
+
+              }
+            </div>
 
         {/* Stats Section (Privacy-Aware) */}
         {profile.privacy?.showStats && profile.stats && (
@@ -285,13 +290,7 @@ export default function PublicProfile() {
           </div>
         )}
 
-        {/* Placeholder for future features */}
-        <div className="mt-6 text-center text-sm text-slate-500 p-4 bg-slate-50 rounded-xl border border-slate-200">
-          {profile.isOwner
-            ? "🎉 Profile complete! Next: Connect with study partners →"
-            : "More coming soon: study activity, badges, and connections 👋"
-          }
-        </div>
+       
       </div>
     </div>
   );

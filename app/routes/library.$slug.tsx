@@ -315,7 +315,7 @@ export default function ResourceDetailPage() {
               disabled={isDownloading}
               className={`flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-bold transition-all active:scale-95 shadow-sm ${r.isPremium
                 ? "bg-amber-500 hover:bg-amber-600 text-white disabled:opacity-60"
-                : "bg-stone-900 hover:bg-stone-800 text-white disabled:opacity-60"
+                : "bg-primary hover:bg-stone-800 text-white disabled:opacity-60"
                 }`}
             >
               {isDownloading
@@ -360,7 +360,7 @@ export default function ResourceDetailPage() {
           ]
             .filter(d => d.value)
             .map(d => (
-              <div key={d.label} className="bg-white rounded-xl border border-stone-100 px-4 py-3">
+              <div key={d.label} className="bg-white rounded-xl border border-tertiary px-4 py-3">
                 <p className="text-[10px] font-bold text-stone-400 uppercase tracking-widest mb-1">
                   {d.label}
                 </p>

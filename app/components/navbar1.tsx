@@ -34,8 +34,8 @@ const DEFAULT_MENU: MenuItem[] = [
   { title: "Home",        url: "/"            },
   { title: "Practice",   url: "/practice"    },
   { title: "Courses",    url: "/courses"     },
-  { title: "Leaderboard",url: "/leaderboard" },
-  { title: "Discover",   url: "/discover"    },
+  //{ title: "Leaderboard",url: "/leaderboard" },
+ // { title: "Discover",   url: "/discover"    },
   { title: "Feed",       url: "/feed"        },
   { title: "Library",    url: "/library"     },
 ];
@@ -235,7 +235,7 @@ const Navbar1 = ({
     <>
       <section
         className={cn(
-          "py-3 border-b bg-background/95 backdrop-blur-sm sticky top-0 z-40",
+          "py-3 bg-background/95 backdrop-blur-sm sticky top-0 z-40",
           className
         )}
       >

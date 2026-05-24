@@ -190,7 +190,7 @@ export function ResourceCard({ resource, isBookmarked, onBookmarkToggle }: Props
                 className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-bold transition-colors ${
                   resource.isPremium
                     ? "bg-amber-500 hover:bg-amber-600 text-white"
-                    : "bg-stone-800 hover:bg-stone-900 text-white"
+                    : "bg-primary hover:bg-stone-900 text-white"
                 } disabled:opacity-60`}
               >
                 {isDownloading
