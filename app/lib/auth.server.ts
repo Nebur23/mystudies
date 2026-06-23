@@ -13,6 +13,7 @@ export const auth = betterAuth({
   baseURL:{
 		allowedHosts: [
 			"192.168.1.71:5173",
+      "mystudies-production.up.railway.app"
 		],
 		protocol: "auto",
 		fallback: "http://localhost:5173",

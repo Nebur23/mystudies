@@ -1,87 +1,81 @@
-# Welcome to React Router!
+# MyStudies
 
-A modern, production-ready template for building full-stack React applications using React Router.
+MyStudies is a modern GCE study platform built with React Router, TypeScript, Tailwind CSS, and Bun. It combines past papers, courses, practice quizzes, social discovery, user profiles, and analytics into a single learning workspace.
 
-[![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/github/remix-run/react-router-templates/tree/main/default)
+## What this project includes
 
-## Features
+- 📚 Library of past papers and study resources
+- 🧠 Practice quizzes with question navigation and submission support
+- 🎓 Courses and learning progress tracking
+- 🌐 Social features like discovery, feed, and connections
+- 🏆 Leaderboard and profile analytics
+- 📄 File upload / document proxy support via UploadThing
+- 📊 PostHog analytics and behavior tracking (client + server)
+- 🌱 PWA-ready configuration for offline-friendly use
+- 🧩 Auth, profile management, and onboarding flows
 
-- 🚀 Server-side rendering
-- ⚡️ Hot Module Replacement (HMR)
-- 📦 Asset bundling and optimization
-- 🔄 Data loading and mutations
-- 🔒 TypeScript by default
-- 🎉 TailwindCSS for styling
-- 📖 [React Router docs](https://reactrouter.com/)
+## Quick start
 
-## Getting Started
+### Install dependencies
 
-### Installation
-
-Install the dependencies:
+This project is designed to work with Bun, but `npm install` is also supported.
 
 ```bash
-npm install
+bun install
 ```
 
-### Development
+### Run locally
 
-Start the development server with HMR:
+```bash
+bun run react-router dev --host
+```
+
+Or with npm/yarn:
 
 ```bash
 npm run dev
 ```
 
-Your application will be available at `http://localhost:5173`.
+Then open `http://localhost:5173`.
 
-## Building for Production
+## Useful scripts
 
-Create a production build:
+- `bun run react-router dev --host` / `npm run dev` — start development server
+- `bun run react-router build` / `npm run build` — build production app
+- `bun run react-router-serve ./build/server/index.js` / `npm start` — serve built app
+- `bun run ./app/db/migrate.ts` — run Drizzle migrations
+- `bun run ./app/db/baseline.ts` — initialize database baseline
+- `bun run ./app/db/seed/index.ts` — seed development data
+- `bun run drizzle-kit studio` — open Drizzle ORM studio
+- `bun run drizzle-kit generate` — generate Drizzle types and schema
 
-```bash
-npm run build
-```
+## Environment configuration
 
-## Deployment
+Copy and configure your environment variables for auth, database, PostHog, and upload settings.
 
-### Docker Deployment
+Example vars may include:
 
-To build and run using Docker:
+- `DATABASE_URL`
+- `VITE_PUBLIC_POSTHOG_PROJECT_TOKEN`
+- `VITE_PUBLIC_POSTHOG_HOST`
+- `UPLOADTHING_KEY`
+- `AUTH_SECRET`
 
-```bash
-docker build -t my-app .
+## Deployment notes
 
-# Run the container
-docker run -p 3000:3000 my-app
-```
+- Build the app with `npm run build` or `bun run react-router build`
+- Deploy the generated `build/` directory and server entrypoint
+- If using Docker, ensure the service exposes the correct port and uses the built artifacts
 
-The containerized application can be deployed to any platform that supports Docker, including:
+## Project structure
 
-- AWS ECS
-- Google Cloud Run
-- Azure Container Apps
-- Digital Ocean App Platform
-- Fly.io
-- Railway
+- `app/` — application entry, route modules, API routes, shared components
+- `app/db/` — Drizzle ORM schema, migrations, and seed scripts
+- `app/lib/` — auth, email, analytics, and helper utilities
+- `app/routes/` — page routes for auth, courses, library, practice, profile, and social features
+- `public/` — static assets
+- `build/` — generated production output
 
-### DIY Deployment
+## Notes
 
-If you're familiar with deploying Node applications, the built-in app server is production-ready.
-
-Make sure to deploy the output of `npm run build`
-
-```
-├── package.json
-├── package-lock.json (or pnpm-lock.yaml, or bun.lockb)
-├── build/
-│   ├── client/    # Static assets
-│   └── server/    # Server-side code
-```
-
-## Styling
-
-This template comes with [Tailwind CSS](https://tailwindcss.com/) already configured for a simple default starting experience. You can use whatever CSS framework you prefer.
-
----
-
-Built with ❤️ using React Router.
+This repository is the client application for MyStudies, a study-focused platform designed for GCE exam preparation and student collaboration.
