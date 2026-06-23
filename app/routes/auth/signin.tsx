@@ -106,7 +106,7 @@ export default function SignInCard() {
             },
             {
                 onRequest: () => setLoading(true),
-                onResponse: () => {
+                onSuccess: () => {
                     setLoading(false);
                     posthog?.identify(email, { email });
                     posthog?.capture("user_signed_in", { method: "email" });

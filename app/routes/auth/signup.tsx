@@ -83,7 +83,7 @@ export default function SignUp() {
             callbackURL: "/sign-in",
             fetchOptions: {
                 onRequest: () => setLoading(true),
-                onResponse: () => {
+                onSuccess: () => {
                     setLoading(false);
                     posthog?.identify(email, { email, name: `${firstName} ${lastName}` });
                     posthog?.capture("user_signed_up", { method: "email" });
