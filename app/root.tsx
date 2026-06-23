@@ -10,8 +10,13 @@ import {
 
 import type { Route } from "./+types/root";
 import "./app.css";
+import { usePostHog } from "@posthog/react";
+import { posthogMiddleware } from "./lib/posthog-middleware";
 import { Toaster } from "./components/ui/sonner";
 import { useEffect, useRef, useState } from "react";
+import { PwaInstallPrompt } from "./components/pwa/PwaInstallPrompt";
+
+export const middleware: Route.MiddlewareFunction[] = [posthogMiddleware];
 
 
 
@@ -26,6 +31,8 @@ export const links: Route.LinksFunction = () => [
     rel: "stylesheet",
     href: "https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap",
   },
+  { rel: "manifest", href: "/manifest.webmanifest" },
+  { rel: "apple-touch-icon", href: "apple-touch-icon-180x180.png" },
 ];
 
 
@@ -96,13 +103,19 @@ export function Layout({ children }: { children: React.ReactNode }) {
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta name="theme-color" content="#7c3aed" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+        <meta name="apple-mobile-web-app-title" content="MyStudies" />
+        <meta name="mobile-web-app-capable" content="yes" />
         <Meta />
         <Links />
       </head>
       <body>
-        <NProgress /> 
+        <NProgress />
         <Toaster richColors closeButton />
         {children}
+        {/* <PwaInstallPrompt /> */}
         <ScrollRestoration />
         <Scripts />
       </body>
@@ -115,6 +128,9 @@ export default function App() {
 }
 
 export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
+  const posthog = usePostHog();
+  posthog.captureException(error);
+
   let message = "Oops!";
   let details = "An unexpected error occurred.";
   let stack: string | undefined;

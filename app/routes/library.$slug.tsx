@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useLoaderData, useFetcher, Link } from "react-router";
+import { usePostHog } from "@posthog/react";
 import {
   ArrowLeft, Download, Bookmark,
   Calendar, Star, Share2,
@@ -20,6 +21,7 @@ import Pamphlet from "~/assets/library/pamphlet.svg";
 import MakingSchema from "~/assets/library/solutions.svg";
 import Syllabus from "~/assets/library/syllabus.svg";
 import Practice from "~/assets/library/Yellow Quiz.svg";
+import { OfflinePdfCache } from "~/components/pwa/OfflinePdfCache";
 
 // ✅ Map slug → illustration
 const CAT_ILLUSTRATION: Record<string, string> = {
@@ -151,6 +153,7 @@ export default function ResourceDetailPage() {
   const { resource: r, isBookmarked, hasDownloaded, related } =
     useLoaderData<typeof loader>();
 
+  const posthog = usePostHog();
   const downloadFetcher = useFetcher<{ success: boolean; downloadUrl: string; fileName: string }>();
   const bookmarkFetcher = useFetcher<{ success: boolean; bookmarked: boolean }>();
 
@@ -173,6 +176,16 @@ export default function ResourceDetailPage() {
   }, [downloadFetcher.data]);
 
   const handleDownload = () => {
+    posthog?.capture("resource_downloaded", {
+      resource_id: r.id,
+      resource_title: r.title,
+      resource_slug: r.slug,
+      subject: r.subject,
+      level: r.level,
+      category: r.categoryName,
+      is_premium: r.isPremium,
+      file_type: r.fileType,
+    });
     downloadFetcher.submit(
       { intent: "download", resourceId: r.id },
       { method: "POST", action: "/api/library/download" }
@@ -182,6 +195,13 @@ export default function ResourceDetailPage() {
   const handleBookmark = () => {
     const next = !bookmarked;
     setBookmarked(next);
+    posthog?.capture("resource_bookmarked", {
+      resource_id: r.id,
+      resource_title: r.title,
+      resource_slug: r.slug,
+      subject: r.subject,
+      action: next ? "add" : "remove",
+    });
     bookmarkFetcher.submit(
       { intent: "bookmark", resourceId: r.id, action: next ? "add" : "remove" },
       { method: "POST", action: "/api/library/download" }
@@ -190,6 +210,14 @@ export default function ResourceDetailPage() {
 
   const handleShare = async () => {
     const url = window.location.href;
+    const shareMethod = typeof navigator.share === "function" ? "native" : "clipboard";
+    posthog?.capture("resource_shared", {
+      resource_id: r.id,
+      resource_title: r.title,
+      resource_slug: r.slug,
+      subject: r.subject,
+      share_method: shareMethod,
+    });
     if (navigator.share) {
       await navigator.share({ title: r.title, url });
     } else {
@@ -308,6 +336,14 @@ export default function ResourceDetailPage() {
                   {r.downloadCount.toLocaleString()} downloads
                 </span>
               </div>
+
+              {r.fileType === "pdf" && (
+                <OfflinePdfCache
+                  fileUrl={r.fileUrl}
+                  fileName={r.title}
+                  fileSize={r.fileSize}
+                />
+              )}
             </div>
 
             <button

@@ -7,6 +7,7 @@ import type { Route } from "./+types/appLayout";
 import { useLoaderData } from "react-router";
 import { getSessionSafe } from "~/lib/auth";
 import { cn } from "~/lib/utils";
+import { PwaInstallPrompt } from "~/components/pwa/PwaInstallPrompt";
 
 export async function loader({ request }: Route.LoaderArgs) {
   const session = await getSessionSafe(request);
@@ -45,6 +46,7 @@ export default function AppLayout() {
       >
         <Outlet />
       </div>
+      <PwaInstallPrompt /> 
       
     </div>
   );

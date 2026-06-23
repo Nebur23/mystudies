@@ -1,5 +1,6 @@
-import { useState, type Key } from "react";
+import { useState, useRef, type Key } from "react";
 import { useLoaderData, useRevalidator, Link } from "react-router";
+import { usePostHog } from "@posthog/react";
 import { LatexText, SolutionRenderer } from "~/components/Tex";
 import type { Route } from "./+types/practice.$paperId";
 import { Button } from "~/components/ui/button";
@@ -151,6 +152,8 @@ function PaperNotFound({
 export default function Practice() {
   const data = useLoaderData<typeof clientLoader>();
   const revalidator = useRevalidator();
+  const posthog = usePostHog();
+  const quizStartedRef = useRef(false);
 
   const [quizState, setQuizState] = useState<QuizState>({
     currentQuestion: 0,
@@ -188,6 +191,17 @@ export default function Practice() {
   const handleAnswer = (selectedIndex: number) => {
     if (hasAnswered) return; // prevent double-answer
 
+    if (!quizStartedRef.current) {
+      quizStartedRef.current = true;
+      posthog?.capture("quiz_started", {
+        subject,
+        level,
+        year,
+        paper,
+        total_questions: questions.length,
+      });
+    }
+
     const isCorrect = selectedIndex === currentQ.correctAnswer;
     const newAnswers = [...quizState.answers, selectedIndex];
     const newAnswerState: AnswerState = isCorrect ? "correct" : "wrong";
@@ -207,6 +221,18 @@ export default function Practice() {
   const handleNext = () => {
     const isLast = quizState.currentQuestion + 1 >= questions.length;
     if (isLast) {
+      const finalScore = quizState.score + (quizState.answerStates[quizState.currentQuestion] === "correct" ? 0 : 0);
+      const percentage = Math.round((quizState.score / questions.length) * 100);
+      posthog?.capture("quiz_completed", {
+        subject,
+        level,
+        year,
+        paper,
+        score: quizState.score,
+        total_questions: questions.length,
+        percentage,
+        time_spent_seconds: Math.round((Date.now() - quizState.startTime) / 1000),
+      });
       setQuizState(s => ({ ...s, showResults: true }));
     } else {
       setQuizState(s => ({
@@ -253,6 +279,16 @@ export default function Practice() {
       if (!response.ok) throw new Error("Failed to submit score");
 
       const result = await response.json();
+      posthog?.capture("quiz_score_saved", {
+        subject,
+        level,
+        year,
+        paper,
+        score: quizState.score,
+        total_questions: questions.length,
+        percentage: Math.round((quizState.score / questions.length) * 100),
+        time_spent_seconds: Math.round((Date.now() - quizState.startTime) / 1000),
+      });
       toast.success(result.message ?? "Score saved!");
       setScoreSubmitted(true);
       revalidator.revalidate();

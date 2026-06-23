@@ -1,3 +1,4 @@
+import { usePostHog } from "@posthog/react";
 import { Button } from "~/components/ui/button";
 import {
     Card,
@@ -39,6 +40,7 @@ type FormErrors = Partial<Record<SignUpFields, string>>;
 // ─── Component ─────────────────────────────────────────────────────────────────
 export default function SignUp() {
     const navigate = useNavigate();
+    const posthog = usePostHog();
 
     const [firstName, setFirstName] = useState("");
     const [lastName, setLastName] = useState("");
@@ -83,6 +85,8 @@ export default function SignUp() {
                 onRequest: () => setLoading(true),
                 onResponse: () => {
                     setLoading(false);
+                    posthog?.identify(email, { email, name: `${firstName} ${lastName}` });
+                    posthog?.capture("user_signed_up", { method: "email" });
                     toast.success("Account created successfully! Please sign in.");
                     navigate("/sign-in");
                 },
@@ -95,8 +99,8 @@ export default function SignUp() {
     }
 
     return (
-        <div className="min-h-screen md:flex items-center justify-center">
-            <Card className="z-50 rounded-md rounded-t-none w-full max-w-lg mx-auto">
+        <div >
+            <Card className="z-50 rounded-md rounded-t-none w-full md:w-105 mx-auto">
                 <CardHeader>
                     <CardTitle className="text-lg md:text-xl">Sign Up</CardTitle>
                     <CardDescription className="text-xs md:text-sm">
@@ -212,6 +216,7 @@ export default function SignUp() {
                             className="w-full gap-2"
                             disabled={loading}
                             onClick={async () => {
+                                posthog?.capture("user_signed_up", { method: "google" });
                                 await authClient.signIn.social({
                                     provider: "google",
                                     callbackURL: "/",
@@ -233,6 +238,7 @@ export default function SignUp() {
                             className="w-full gap-2"
                             disabled={loading}
                             onClick={async () => {
+                                posthog?.capture("user_signed_up", { method: "facebook" });
                                 await signIn.social({
                                     provider: "facebook",
                                     callbackURL: "/",
@@ -253,7 +259,7 @@ export default function SignUp() {
                 </CardContent>
             </Card>
 
-            <FieldDescription className="px-6 text-center">
+            <FieldDescription className="px-6 text-center mt-7 text-xs">
                 By clicking continue, you agree to our <a href="#">Terms of Service</a>{" "}
                 and <a href="#">Privacy Policy</a>.
             </FieldDescription>

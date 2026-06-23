@@ -6,6 +6,7 @@ import { Loader2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
+import { usePostHog } from "@posthog/react";
 import { Button } from "~/components/ui/button";
 import {
     Card,
@@ -60,6 +61,7 @@ function getSafeRedirect(redirectParam: string | null, fallback = "/"): string {
 export default function SignInCard() {
     const [searchParams] = useSearchParams();
     const redirectTo = getSafeRedirect(searchParams.get("redirect"));
+    const posthog = usePostHog();
 
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
@@ -106,6 +108,8 @@ export default function SignInCard() {
                 onRequest: () => setLoading(true),
                 onResponse: () => {
                     setLoading(false);
+                    posthog?.identify(email, { email });
+                    posthog?.capture("user_signed_in", { method: "email" });
                     toast.success("Logged in successfully!");
                 },
                 onError: (ctx) => {
@@ -117,7 +121,7 @@ export default function SignInCard() {
     }
 
     return (
-        <Card className="z-50 rounded-md rounded-t-none w-full">
+        <Card className="z-50 rounded-md rounded-t-none w-full md:w-105 mx-auto">
             <CardHeader>
                 <CardTitle className="text-lg md:text-xl">Sign In</CardTitle>
                 <CardDescription className="text-xs md:text-sm">
@@ -202,12 +206,13 @@ export default function SignInCard() {
                         type="button"
                         variant="outline"
                         className="w-full gap-2"
-                        onClick={() =>
+                        onClick={() => {
+                            posthog?.capture("user_signed_in", { method: "google" });
                             signIn.social({
                                 provider: "google",
-                                callbackURL: redirectTo,   // ← same redirect for OAuth
-                            })
-                        }
+                                callbackURL: redirectTo,
+                            });
+                        }}
                     >
                         <svg xmlns="http://www.w3.org/2000/svg" width="0.98em" height="1em" viewBox="0 0 256 262">
                             <path fill="#4285F4" d="M255.878 133.451c0-10.734-.871-18.567-2.756-26.69H130.55v48.448h71.947c-1.45 12.04-9.283 30.172-26.69 42.356l-.244 1.622l38.755 30.023l2.685.268c24.659-22.774 38.875-56.282 38.875-96.027" />

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useFetcher } from "react-router";
+import { usePostHog } from "@posthog/react";
 import {
   UserPlus,
   UserCheck,
@@ -46,6 +47,7 @@ export function ConnectButton({
   onStatusChange,
 }: Props) {
   const fetcher = useFetcher();
+  const posthog = usePostHog();
 
   const [status, setStatus] = useState<ConnectionStatus>(
     initialStatus.status
@@ -88,6 +90,12 @@ export function ConnectButton({
   const handleAction = (action: ActionType) => {
     const previousStatus = status;
     const nextStatus = getNextStatus(action);
+
+    if (action === "send") {
+      posthog?.capture("connection_request_sent", { target_user_id: targetUserId });
+    } else if (action === "accept") {
+      posthog?.capture("connection_accepted", { target_user_id: targetUserId });
+    }
 
     setLoadingAction(action);
 

@@ -45,6 +45,8 @@ export default [
     route("library", "routes/library.tsx"),
     route("library/:slug", "routes/library.$slug.tsx"),
 
+    route("offline", "./routes/offline.tsx"),
+
 
     // layout("routes/profile/ProfileLayout.tsx", [
     route("profile/me", "routes/profile/profile.tsx"),

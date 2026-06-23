@@ -1,6 +1,7 @@
 import { submitQuizScore } from "~/lib/leaderboard.server";
 import { auth } from "~/lib/auth.server";
 import type { Route } from "./practice/+types/practice";
+import type { PostHogContext } from "~/lib/posthog-middleware";
 
 
 
@@ -9,7 +10,7 @@ import type { Route } from "./practice/+types/practice";
  * Handles quiz score submissions and leaderboard updates
  * React Router v7 action pattern
  */
-export async function action({ request }: Route.ActionArgs) {
+export async function action({ request, context }: Route.ActionArgs) {
 
 
   try {
@@ -41,6 +42,21 @@ export async function action({ request }: Route.ActionArgs) {
       totalQuestions,
       timeSpent,
     });
+
+    const posthog = (context as PostHogContext).posthog;
+    if (posthog) {
+      posthog.capture({
+        event: "server_quiz_submitted",
+        distinctId: userId,
+        properties: {
+          quiz_id: quizId,
+          score,
+          total_questions: totalQuestions,
+          time_spent_seconds: timeSpent,
+          points_earned: result.points,
+        },
+      });
+    }
 
     return {
       success: true,

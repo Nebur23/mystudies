@@ -1,6 +1,7 @@
 // app/routes/onboarding.profile.tsx
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { useNavigate, useFetcher, redirect, useLoaderData } from "react-router";
+import { usePostHog } from "@posthog/react";
 import { ChevronLeft, CheckCircle2 } from "lucide-react";
 import { requireAuth } from "~/lib/auth";
 import { generateUsername } from "~/utils/profileCompletion";
@@ -106,6 +107,7 @@ export default function ProfileSetup() {
   const { existingProfile } = useLoaderData<typeof loader>();
   const fetcher = useFetcher();
   const navigate = useNavigate();
+  const posthog = usePostHog();
 
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState<FormData>(DEFAULT_FORM);
@@ -169,6 +171,12 @@ export default function ProfileSetup() {
   const handleSubmit = useCallback((e: React.FormEvent) => {
     e.preventDefault();
     const { privacy, subjects, ...rest } = formData;
+    posthog?.capture("onboarding_completed", {
+      level: formData.level,
+      region: formData.region,
+      subjects_count: formData.subjects.length,
+      target_exam_year: formData.targetExamYear,
+    });
     fetcher.submit(
       {
         ...rest,
@@ -178,7 +186,7 @@ export default function ProfileSetup() {
       },
       { method: "POST", action: "/api/profile/update" },
     );
-  }, [fetcher, formData]);
+  }, [fetcher, formData, posthog]);
 
   // FIX 9: Dynamic exam years relative to current year
   const examYears = useMemo(() => {

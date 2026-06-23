@@ -1,5 +1,6 @@
 import { useState, useCallback } from "react";
 import { useLoaderData, useRevalidator, Link } from "react-router";
+import { usePostHog } from "@posthog/react";
 import { ChevronLeft, BookOpen, MessageSquare, CheckCircle2, Clock } from "lucide-react";
 import { LessonList } from "~/components/courses/LessonList";
 import { CourseNotes } from "~/components/courses/CourseNotes";
@@ -95,6 +96,7 @@ export async function loader({ params, request }: Route.LoaderArgs) {
 export default function CoursePage() {
   const loaderData = useLoaderData<typeof loader>();
   const revalidator = useRevalidator();
+  const posthog = usePostHog();
 
   // ✅ Local progressMap state — updated optimistically on lesson complete
   //    so checkmarks appear instantly without waiting for revalidation
@@ -136,12 +138,20 @@ export default function CoursePage() {
           lastWatchedAt: new Date(),
         },
       };
-      if (!wasCompleted) setCompletedCount(c => c + 1);
+      if (!wasCompleted) {
+        setCompletedCount(c => c + 1);
+        posthog?.capture("lesson_completed", {
+          lesson_id: lessonId,
+          course_slug: course.slug,
+          course_title: course.title,
+          watched_seconds: watchedSeconds,
+        });
+      }
       return updated;
     });
     // Background revalidation keeps DB and client in sync
     revalidator.revalidate();
-  }, [revalidator]);
+  }, [revalidator, posthog, course.slug, course.title]);
 
   // ✅ Track progress update without triggering full revalidation
   const handleProgressUpdate = useCallback((lessonId: string, watchedSeconds: number) => {
@@ -158,6 +168,11 @@ export default function CoursePage() {
   }, []);
 
   const handleSelectLesson = (id: string) => {
+    posthog?.capture("lesson_selected", {
+      lesson_id: id,
+      course_slug: course.slug,
+      course_title: course.title,
+    });
     setActiveLessonId(id);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };

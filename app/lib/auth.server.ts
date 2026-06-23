@@ -10,6 +10,13 @@ export const auth = betterAuth({
     provider: "pg", // or "mysql", "sqlite"
     schema: schema,
   }),
+  baseURL:{
+		allowedHosts: [
+			"192.168.1.71:5173",
+		],
+		protocol: "auto",
+		fallback: "http://localhost:5173",
+	},
   user: {
     additionalFields: {
       role: {
