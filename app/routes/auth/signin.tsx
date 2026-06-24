@@ -140,6 +140,8 @@ export default function SignInCard() {
             return;
         }
 
+        //console.log("Password reset email sent:", data);
+
         toast.success("Password reset email sent! Please check your inbox.");
         setLoadingResetPwd(false);
 
@@ -183,7 +185,7 @@ export default function SignInCard() {
                             <Label htmlFor="password">Password</Label>
                             <button
                                 onClick={handlePasswordReset}
-                                disabled={loadingResetPwd || !email}
+                                disabled={loadingResetPwd}
                                 className="ml-auto inline-block text-sm underline"
                             >
                                 Forgot your password?
