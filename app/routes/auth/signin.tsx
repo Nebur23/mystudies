@@ -67,6 +67,7 @@ export default function SignInCard() {
     const [password, setPassword] = useState("");
     const [rememberMe, setRememberMe] = useState(false);
     const [loading, setLoading] = useState(false);
+    const [loadingResetPwd, setLoadingResetPwd] = useState(false);
     const [errors, setErrors] = useState<SignInFormErrors>({});
 
     /** Validate a single field on blur for inline feedback */
@@ -126,17 +127,21 @@ export default function SignInCard() {
             return;
         }
 
-       const { data, error } = await requestPasswordReset({
+        setLoadingResetPwd(true);
+
+        const { data, error } = await requestPasswordReset({
             email,
             redirectTo: "https://mystudies-production.up.railway.app/reset-password",
         });
 
         if (error) {
             toast.error(error.message);
+            setLoadingResetPwd(false);
+            return;
         }
 
         toast.success("Password reset email sent! Please check your inbox.");
-
+        setLoadingResetPwd(false);
 
     }
 
@@ -178,6 +183,7 @@ export default function SignInCard() {
                             <Label htmlFor="password">Password</Label>
                             <button
                                 onClick={handlePasswordReset}
+                                disabled={loadingResetPwd || !email}
                                 className="ml-auto inline-block text-sm underline"
                             >
                                 Forgot your password?

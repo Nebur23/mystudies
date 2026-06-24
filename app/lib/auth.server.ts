@@ -13,12 +13,16 @@ export const auth = betterAuth({
   trustedOrigins: [
     "http://localhost:5173",
     "http://192.168.1.71:5173",
-    " http://10.63.144.204:5173"
+    "http://10.63.144.204:5173",
+    "https://mystudies-production.up.railway.app",
   ],
   baseURL: {
     allowedHosts: [
-      "192.168.1.71:5173",
-      "mystudies-production.up.railway.app"
+      "localhost",
+      "127.0.0.1",
+      "192.168.1.71",
+      "10.63.144.204",
+      "mystudies-production.up.railway.app",
     ],
     protocol: "auto",
     fallback: "http://localhost:5173",
