@@ -2,19 +2,22 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import {
   ChevronLeft, ChevronRight, ZoomIn, ZoomOut,
   Download, Loader2, AlertCircle, Star,
+  BookOpen,
 } from "lucide-react";
 import { Document, Page } from "react-pdf";
 import "react-pdf/dist/Page/AnnotationLayer.css";
 import "react-pdf/dist/Page/TextLayer.css";
+import { Link } from "react-router";
 
 // ✅ Import statically — worker is already configured in entry.client.tsx
 // The component is still SSR-safe because we guard rendering with `mounted` state
 
 interface Props {
-  fileUrl:    string;
-  maxPages:   number;
-  isPremium:  boolean;
+  fileUrl: string;
+  maxPages: number;
+  isPremium: boolean;
   onDownload: () => void;
+  slug: string;
 }
 
 function toProxyUrl(fileUrl: string): string {
@@ -31,15 +34,16 @@ export default function PdfPreviewClient({
   maxPages,
   isPremium,
   onDownload,
+  slug,
 }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const [mounted,    setMounted]    = useState(false);
-  const [page,       setPage]       = useState(1);
-  const [zoom,       setZoom]       = useState(1);
+  const [mounted, setMounted] = useState(false);
+  const [page, setPage] = useState(1);
+  const [zoom, setZoom] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
-  const [limitHit,   setLimitHit]   = useState(false);
-  const [width,      setWidth]      = useState(680);
+  const [limitHit, setLimitHit] = useState(false);
+  const [width, setWidth] = useState(680);
 
   // ✅ Mount guard — prevents SSR from rendering the canvas
   useEffect(() => { setMounted(true); }, []);
@@ -55,12 +59,10 @@ export default function PdfPreviewClient({
     return () => ro.disconnect();
   }, [mounted]);
 
-  const effectiveMax = totalPages
-    ? (isPremium ? Math.min(maxPages, totalPages) : totalPages)
-    : maxPages;
+  const previewLimit = totalPages ? Math.min(maxPages, totalPages) : maxPages;
 
   const goNext = () => {
-    if (page >= effectiveMax) { setLimitHit(true); return; }
+    if (page >= previewLimit) { setLimitHit(true); return; }
     setPage(p => p + 1);
     setLimitHit(false);
   };
@@ -74,7 +76,7 @@ export default function PdfPreviewClient({
     setTotalPages(numPages);
   }, []);
 
-  const showOverlay = limitHit || (isPremium && page > maxPages);
+  const showOverlay = limitHit || page >= previewLimit;
 
   if (!mounted) {
     return (
@@ -100,12 +102,12 @@ export default function PdfPreviewClient({
           </button>
           <span className="text-xs text-stone-500 tabular-nums px-1 min-w-20 text-center">
             {totalPages
-              ? `Page ${page} of ${isPremium ? `${Math.min(maxPages, totalPages)}*` : totalPages}`
+              ? `Page ${page} of ${previewLimit}`
               : "Loading…"}
           </span>
           <button
             onClick={goNext}
-            disabled={!totalPages || page >= effectiveMax}
+            disabled={!totalPages || page >= previewLimit}
             className="p-1.5 rounded-lg hover:bg-stone-200 disabled:opacity-30 transition-colors"
           >
             <ChevronRight size={16} className="text-stone-600" />
@@ -171,6 +173,25 @@ export default function PdfPreviewClient({
             renderTextLayer
             renderAnnotationLayer={false}
           />
+
+          {/* {Array.from(
+            new Array(totalPages),
+            (_, index) => (
+              <Page
+                key={`page_${index + 1}`}
+                pageNumber={index + 1}
+                width={width * zoom}
+                className="my-4 shadow-md"
+                loading={
+                  <div className="flex items-center justify-center" style={{ minHeight: 400 }}>
+                    <Loader2 size={20} className="animate-spin text-stone-400" />
+                  </div>
+                }
+                renderTextLayer
+                renderAnnotationLayer={false}
+              />
+            ),
+          )} */}
         </Document>
 
         {/* Premium / limit overlay */}
@@ -181,34 +202,36 @@ export default function PdfPreviewClient({
             </div>
             <div className="text-center">
               <p className="font-bold text-stone-900">
-                {isPremium ? "Premium resource" : "Preview limit reached"}
+                Preview limit reached
               </p>
               <p className="text-sm text-stone-500 mt-1">
-                {isPremium
-                  ? "Unlock this resource to view the full document"
-                  : "Download the full document to continue reading"}
+                This resource is previewed for the first {maxPages} page{maxPages !== 1 ? "s" : ""}. Download the full document to continue reading.
               </p>
             </div>
-            <button
+            {/* <button
               onClick={onDownload}
-              className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold transition-all ${
-                isPremium
-                  ? "bg-amber-500 hover:bg-amber-600 text-white"
-                  : "bg-stone-900 hover:bg-stone-800 text-white"
-              }`}
+              className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold transition-all ${isPremium
+                ? "bg-amber-500 hover:bg-amber-600 text-white"
+                : "bg-stone-900 hover:bg-stone-800 text-white"
+                }`}
             >
               <Download size={14} />
-              {isPremium ? "Unlock & Download" : "Download Full PDF"}
-            </button>
+              Download Full PDF
+            </button> */}
+
+            <Link
+              to={`/library/${slug}/view`}
+              className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-primary text-white text-[11px] font-bold hover:bg-stone-900 transition-colors"
+            >
+              <BookOpen size={10} /> View
+            </Link>
           </div>
         )}
       </div>
 
-      {isPremium && (
-        <p className="px-4 py-2 text-[10px] text-stone-400 bg-stone-50 border-t border-stone-100">
-          * Preview limited to {maxPages} page{maxPages !== 1 ? "s" : ""}
-        </p>
-      )}
+      <p className="px-4 py-2 text-[10px] text-stone-400 bg-stone-50 border-t border-stone-100">
+        Preview limited to {maxPages} page{maxPages !== 1 ? "s" : ""}
+      </p>
     </div>
   );
 }

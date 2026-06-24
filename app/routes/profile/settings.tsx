@@ -134,10 +134,10 @@ export default function SettingsPage() {
 
   const tabs: { id: Tab; label: string; icon: any }[] = [
     { id: "profile", label: "Profile", icon: User },
-    { id: "privacy", label: "Privacy", icon: Shield },
-    { id: "notifications", label: "Alerts", icon: Bell },
+    //{ id: "privacy", label: "Privacy", icon: Shield },
+    // { id: "notifications", label: "Alerts", icon: Bell },
     { id: "security", label: "Security", icon: Lock },
-    { id: "account", label: "Account", icon: LogOut },
+    // { id: "account", label: "Account", icon: LogOut },
   ];
 
   const { data, isPending, error } = useSession();

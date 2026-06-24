@@ -1,5 +1,4 @@
-import { Link } from "react-router";
-import { useFetcher } from "react-router";
+import { Link, useFetcher } from "react-router";
 import { useEffect, useState } from "react";
 import {
   Download, Bookmark, FileText, BookOpen,
@@ -50,38 +49,15 @@ const LEVEL_STYLE: Record<string, string> = {
 };
 
 export function ResourceCard({ resource, isBookmarked, onBookmarkToggle }: Props) {
-  const downloadFetcher = useFetcher<{ success: boolean; downloadUrl: string; fileName: string }>();
   const bookmarkFetcher = useFetcher<{ success: boolean; bookmarked: boolean }>();
 
-  const fileStyle  = FILE_COLORS[resource.fileType] ?? { bg: "bg-stone-100", text: "text-stone-600" };
-  const size       = formatSize(resource.fileSize);
-  const isDownloading = downloadFetcher.state !== "idle";
+  const fileStyle = FILE_COLORS[resource.fileType] ?? { bg: "bg-stone-100", text: "text-stone-600" };
+  const size = formatSize(resource.fileSize);
   const isBookmarking = bookmarkFetcher.state !== "idle";
 
   // Optimistic bookmark state
   const [optimisticBookmarked, setOptimisticBookmarked] = useState(isBookmarked);
   useEffect(() => { setOptimisticBookmarked(isBookmarked); }, [isBookmarked]);
-
-  // Auto-trigger download when URL arrives
-  useEffect(() => {
-    if (downloadFetcher.data?.success && downloadFetcher.data.downloadUrl) {
-      const a = document.createElement("a");
-      a.href     = downloadFetcher.data.downloadUrl;
-      a.download = downloadFetcher.data.fileName;
-      a.target   = "_blank";
-      a.rel      = "noopener noreferrer";
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-    }
-  }, [downloadFetcher.data]);
-
-  const handleDownload = () => {
-    downloadFetcher.submit(
-      { intent: "download", resourceId: resource.id },
-      { method: "POST", action: "/api/library/download" }
-    );
-  };
 
   const handleBookmark = () => {
     const next = !optimisticBookmarked;
@@ -181,24 +157,17 @@ export function ResourceCard({ resource, isBookmarked, onBookmarkToggle }: Props
                 to={`/library/${resource.slug}`}
                 className="flex items-center gap-1 px-2.5 py-1.5 border border-stone-200 rounded-lg text-[11px] font-semibold text-stone-600 hover:bg-stone-50 transition-colors"
               >
-                <ExternalLink size={10} /> Preview
+                <FileText size={10} /> Info
               </Link>
 
-              <button
-                onClick={handleDownload}
-                disabled={isDownloading}
-                className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-bold transition-colors ${
-                  resource.isPremium
-                    ? "bg-amber-500 hover:bg-amber-600 text-white"
-                    : "bg-primary hover:bg-stone-900 text-white"
-                } disabled:opacity-60`}
-              >
-                {isDownloading
-                  ? <Loader2 size={10} className="animate-spin" />
-                  : <Download size={10} />
-                }
-                {resource.isPremium ? "Unlock" : isDownloading ? "…" : "Download"}
-              </button>
+              {resource.fileType === "pdf" ? (
+                <Link
+                  to={`/library/${resource.slug}/view`}
+                  className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-primary text-white text-[11px] font-bold hover:bg-stone-900 transition-colors"
+                >
+                  <BookOpen size={10} /> View
+                </Link>
+              ) : null}
             </div>
           </div>
         </div>

@@ -152,6 +152,7 @@ const FILE_LABEL: Record<string, string> = {
 export default function ResourceDetailPage() {
   const { resource: r, isBookmarked, hasDownloaded, related } =
     useLoaderData<typeof loader>();
+  const PREVIEW_PAGE_LIMIT = 5;
 
   const posthog = usePostHog();
   const downloadFetcher = useFetcher<{ success: boolean; downloadUrl: string; fileName: string }>();
@@ -323,7 +324,7 @@ export default function ResourceDetailPage() {
         </div>
 
         {/* ── Download CTA card ──────────────────────────────────────────────── */}
-        <div className="bg-white rounded-2xl border border-stone-200 p-5 shadow-sm">
+        {/* <div className="bg-white rounded-2xl border border-stone-200 p-5 shadow-sm">
           <div className="flex items-center justify-between gap-4 flex-wrap">
             <div className="space-y-1">
               <p className="text-xs font-semibold text-stone-500 uppercase tracking-wide">
@@ -368,7 +369,7 @@ export default function ResourceDetailPage() {
               <p className="text-xs text-red-700">Download failed — please try again</p>
             </div>
           )}
-        </div>
+        </div> */}
 
         {/* ── Description ────────────────────────────────────────────────────── */}
         {r.description && (
@@ -419,7 +420,8 @@ export default function ResourceDetailPage() {
             }>
               <PdfPreviewClient
                 fileUrl={r.fileUrl}
-                maxPages={r.isPremium ? 2 : (r.previewPages ?? 5)}
+                maxPages={PREVIEW_PAGE_LIMIT}
+                slug={r.slug}
                 isPremium={r.isPremium as boolean}
                 onDownload={handleDownload}
               />

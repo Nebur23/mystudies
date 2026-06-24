@@ -32,7 +32,7 @@ const CAT_ILLUSTRATION: Record<string, string> = {
     "pamphlets": Pamphlet,
 };
 
-// ── Loader (unchanged) ────────────────────────────────────────────────────────
+// ── Loader  ────────────────────────────────────────────────────────
 export async function loader({ request }: Route.LoaderArgs) {
     const session = await requireAuth(request);
     const url = new URL(request.url);

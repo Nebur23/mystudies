@@ -79,14 +79,14 @@ export function UserAvatar() {
                 }}>
                 My Profile
               </button>
-              <button
+              {/* <button
                 className="w-full text-center text-sm text-black font-medium hover:underline py-2"
                 onClick={() => {
                   navigate("/connections")
                   setIsOpen(false)
                 }}>
                 Connections
-              </button>
+              </button> */}
 
               <button
                 className="w-full text-center text-sm text-black font-medium hover:underline py-2"

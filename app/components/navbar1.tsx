@@ -36,7 +36,7 @@ const DEFAULT_MENU: MenuItem[] = [
   { title: "Courses",    url: "/courses"     },
   //{ title: "Leaderboard",url: "/leaderboard" },
  // { title: "Discover",   url: "/discover"    },
-  { title: "Feed",       url: "/feed"        },
+  // { title: "Feed",       url: "/feed"        },
   { title: "Library",    url: "/library"     },
 ];
 
