@@ -42,6 +42,7 @@ export default [
     route("feed", "routes/feed.tsx"),
     route("sign-in", "routes/auth/signin.tsx"),
     route("sign-up", "routes/auth/signup.tsx"),
+    route("reset-password", "routes/auth/reset-password.tsx"),
     route("library", "routes/library.tsx"),
     route("library/:slug/view", "routes/library/library.$slug.view.tsx"),
     route("library/:slug", "routes/library.$slug.tsx"),

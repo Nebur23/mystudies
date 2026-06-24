@@ -6,4 +6,4 @@ export const authClient = createAuthClient({
     //baseURL: "https://mystudies-production.up.railway.app"
 })
 
-export const { useSession, getSession, signIn, signOut, signUp } = authClient; 
+export const { useSession, getSession, signIn, signOut, signUp, requestPasswordReset, resetPassword } = authClient; 

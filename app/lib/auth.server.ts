@@ -13,6 +13,7 @@ export const auth = betterAuth({
   trustedOrigins: [
     "http://localhost:5173",
     "http://192.168.1.71:5173",
+    " http://10.63.144.204:5173"
   ],
   baseURL: {
     allowedHosts: [
@@ -34,6 +35,19 @@ export const auth = betterAuth({
   },
   emailAndPassword: {
     enabled: true,
+    sendResetPassword: async ({ user, url, token }, request) => {
+
+      void sendEmail({
+        to: user.email,
+        subject: "Reset your password",
+        url,
+        type: "reset-password"
+      });
+    },
+    onPasswordReset: async ({ user }, request) => {
+      // your logic here
+      console.log(`Password for user ${user.email} has been reset.`);
+    },
   },
   emailVerification: {
     sendOnSignUp: true,

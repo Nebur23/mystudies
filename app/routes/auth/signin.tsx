@@ -18,7 +18,7 @@ import {
 import { Checkbox } from "~/components/ui/checkbox";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
-import { signIn } from "~/lib/auth-client";
+import { requestPasswordReset, signIn } from "~/lib/auth-client";
 import { PasswordInput } from "~/components/ui/password-input";
 
 // ─── Zod schema ────────────────────────────────────────────────────────────────
@@ -120,6 +120,26 @@ export default function SignInCard() {
         );
     }
 
+    async function handlePasswordReset() {
+        if (!email) {
+            toast.error("Please enter your email to reset your password.");
+            return;
+        }
+
+       const { data, error } = await requestPasswordReset({
+            email,
+            redirectTo: "https://mystudies-production.up.railway.app/reset-password",
+        });
+
+        if (error) {
+            toast.error(error.message);
+        }
+
+        toast.success("Password reset email sent! Please check your inbox.");
+
+
+    }
+
     return (
         <Card className="z-50 rounded-md rounded-t-none w-full md:w-105 mx-auto">
             <CardHeader>
@@ -156,12 +176,12 @@ export default function SignInCard() {
                     <div className="grid gap-2">
                         <div className="flex items-center">
                             <Label htmlFor="password">Password</Label>
-                            <Link
-                                to="/forget-password"
+                            <button
+                                onClick={handlePasswordReset}
                                 className="ml-auto inline-block text-sm underline"
                             >
                                 Forgot your password?
-                            </Link>
+                            </button>
                         </div>
                         <PasswordInput
                             id="password"

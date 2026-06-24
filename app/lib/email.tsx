@@ -13,3 +13,14 @@ export const Email: React.FC<Readonly<EmailProps>> = ({ url }) => {
     </Html>
   );
 };
+
+export const ResetPasswordEmail: React.FC<Readonly<EmailProps>> = ({ url }) => {
+  return (
+    <Html lang="en">
+      <h1>Reset your password</h1>
+      <p>Click the button below to reset your password:</p>
+      <Button href={url}>Click here</Button>
+    </Html>
+  );
+};
+
