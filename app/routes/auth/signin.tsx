@@ -1,6 +1,5 @@
 "use client";
 
-import { DiscordLogoIcon, GitHubLogoIcon } from "@radix-ui/react-icons";
 import { Link, useSearchParams } from "react-router";
 import { Loader2 } from "lucide-react";
 import { useState } from "react";

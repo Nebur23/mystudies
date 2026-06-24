@@ -40,13 +40,17 @@ export const auth = betterAuth({
   emailAndPassword: {
     enabled: true,
     sendResetPassword: async ({ user, url, token }, request) => {
-
-      void sendEmail({
-        to: user.email,
-        subject: "Reset your password",
-        url,
-        type: "reset-password"
-      });
+      try {
+        await sendEmail({
+          to: user.email,
+          subject: "Reset your password",
+          url,
+          type: "reset-password"
+        });
+      } catch (error) {
+        console.error("Password reset email failed", error);
+        throw error;
+      }
     },
     onPasswordReset: async ({ user }, request) => {
       // your logic here
@@ -56,12 +60,16 @@ export const auth = betterAuth({
   emailVerification: {
     sendOnSignUp: true,
     sendVerificationEmail: async ({ user, url, token }, request) => {
-      void sendEmail({
-        to: user.email,
-        subject: "Verify your email address",
-        url
-        //text: `Click the link to verify your email: ${url}`,
-      });
+      try {
+        await sendEmail({
+          to: user.email,
+          subject: "Verify your email address",
+          url,
+        });
+      } catch (error) {
+        console.error("Verification email failed", error);
+        throw error;
+      }
     },
   },
 });
