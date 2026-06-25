@@ -4,11 +4,11 @@ import { Email, ResetPasswordEmail } from './email';
 
 const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST ?? "smtp.gmail.com",
-  port: Number(process.env.SMTP_PORT ?? 465),
-  secure: true,
-  requireTLS: true,
+  port: Number(process.env.SMTP_PORT ?? 587),  // 587, not 465
+  secure: false,                                 // false for STARTTLS
+  requireTLS: true,                              // upgrade to TLS after connect
   auth: {
-    user: process.env.SMTP_USER ?? process.env.GMAIL_USER ?? "masteryourstudies100@gmail.com",
+    user: process.env.SMTP_USER ?? "masteryourstudies100@gmail.com",
     pass: process.env.SMTP_PASS ?? process.env.GOOGLE_APP_PASSWORD,
   },
   connectionTimeout: 15000,
