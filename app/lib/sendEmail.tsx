@@ -3,11 +3,17 @@ import { render } from 'react-email';
 import { Email, ResetPasswordEmail } from './email';
 
 const transporter = nodemailer.createTransport({
-  service: "gmail",
+  host: process.env.SMTP_HOST ?? "smtp.gmail.com",
+  port: Number(process.env.SMTP_PORT ?? 465),
+  secure: true,
+  requireTLS: true,
   auth: {
-    user: "masteryourstudies100@gmail.com",
-    pass: process.env.GOOGLE_APP_PASSWORD, // NOT your real password
+    user: process.env.SMTP_USER ?? process.env.GMAIL_USER ?? "masteryourstudies100@gmail.com",
+    pass: process.env.SMTP_PASS ?? process.env.GOOGLE_APP_PASSWORD,
   },
+  connectionTimeout: 15000,
+  greetingTimeout: 15000,
+  socketTimeout: 15000,
 });
 
 
