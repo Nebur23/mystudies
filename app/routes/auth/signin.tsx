@@ -127,6 +127,7 @@ export default function SignInCard() {
         }
 
         setLoadingResetPwd(true);
+        toast.info("Sending password reset email...");
 
         const { data, error } = await requestPasswordReset({
             email,
@@ -139,10 +140,12 @@ export default function SignInCard() {
             return;
         }
 
-        //console.log("Password reset email sent:", data);
+        console.log("Password reset email sent:", data,email);
 
         toast.success("Password reset email sent! Please check your inbox.");
         setLoadingResetPwd(false);
+        setEmail("")
+        setPassword("")
 
     }
 
@@ -185,7 +188,8 @@ export default function SignInCard() {
                             <button
                                 onClick={handlePasswordReset}
                                 disabled={loadingResetPwd}
-                                className="ml-auto inline-block text-sm underline"
+
+                                className="ml-auto inline-block text-sm underline "
                             >
                                 Forgot your password?
                             </button>

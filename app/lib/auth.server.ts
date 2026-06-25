@@ -14,7 +14,7 @@ export const auth = betterAuth({
     "http://localhost:5173",
     "http://192.168.1.71:5173",
     "http://10.63.144.204:5173",
-    "https://mystudies-production.up.railway.app",
+   "https://mystudies-production.up.railway.app",
   ],
   baseURL: {
     allowedHosts: [

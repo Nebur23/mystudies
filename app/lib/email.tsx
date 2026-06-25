@@ -19,6 +19,7 @@ export const ResetPasswordEmail: React.FC<Readonly<EmailProps>> = ({ url }) => {
     <Html lang="en">
       <h1>Reset your password</h1>
       <p>Click the button below to reset your password:</p>
+      <p>url : {url}</p>
       <Button href={url}>Click here</Button>
     </Html>
   );
