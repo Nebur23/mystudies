@@ -19,6 +19,7 @@ import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
 import { requestPasswordReset, signIn } from "~/lib/auth-client";
 import { PasswordInput } from "~/components/ui/password-input";
+import { useNavigate } from "react-router";
 
 // ─── Zod schema ────────────────────────────────────────────────────────────────
 const signInSchema = z.object({
@@ -59,6 +60,7 @@ function getSafeRedirect(redirectParam: string | null, fallback = "/"): string {
 // ─── Component ─────────────────────────────────────────────────────────────────
 export default function SignInCard() {
     const [searchParams] = useSearchParams();
+    const navigate = useNavigate();
     const redirectTo = getSafeRedirect(searchParams.get("redirect"));
     const posthog = usePostHog();
 
@@ -66,7 +68,6 @@ export default function SignInCard() {
     const [password, setPassword] = useState("");
     const [rememberMe, setRememberMe] = useState(false);
     const [loading, setLoading] = useState(false);
-    const [loadingResetPwd, setLoadingResetPwd] = useState(false);
     const [errors, setErrors] = useState<SignInFormErrors>({});
 
     /** Validate a single field on blur for inline feedback */
@@ -121,32 +122,7 @@ export default function SignInCard() {
     }
 
     async function handlePasswordReset() {
-        if (!email) {
-            toast.error("Please enter your email to reset your password.");
-            return;
-        }
-
-        setLoadingResetPwd(true);
-        toast.info("Sending password reset email...");
-
-        const { data, error } = await requestPasswordReset({
-            email,
-            redirectTo: "https://mystudies-production.up.railway.app/reset-password",
-        });
-
-        if (error) {
-            toast.error(error.message);
-            setLoadingResetPwd(false);
-            return;
-        }
-
-        console.log("Password reset email sent:", data,email);
-
-        toast.success("Password reset email sent! Please check your inbox.");
-        setLoadingResetPwd(false);
-        setEmail("")
-        setPassword("")
-
+       navigate("/request-reset-password");
     }
 
     return (
@@ -187,7 +163,7 @@ export default function SignInCard() {
                             <Label htmlFor="password">Password</Label>
                             <button
                                 onClick={handlePasswordReset}
-                                disabled={loadingResetPwd}
+                                type="button"
 
                                 className="ml-auto inline-block text-sm underline "
                             >
