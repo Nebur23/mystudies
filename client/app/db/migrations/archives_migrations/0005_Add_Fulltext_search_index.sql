@@ -1,0 +1,1 @@
+CREATE INDEX "student_profile_search_vector_gin" ON "student_profile" USING gin ("search_vector");

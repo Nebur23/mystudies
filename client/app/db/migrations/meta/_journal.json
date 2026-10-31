@@ -1,0 +1,48 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1778524016241,
+      "tag": "0000_concerned_sentinels",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1778607138767,
+      "tag": "0001_Notifications_ModerationSystem",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1778607694461,
+      "tag": "0002_Notifications_ModerationSystem_update",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1778831731056,
+      "tag": "0003_User_Progress",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1779041535680,
+      "tag": "0004_library",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1790760959216,
+      "tag": "0005_freezing_turbo",
+      "breakpoints": true
+    }
+  ]
+}

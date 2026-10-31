@@ -1,0 +1,54 @@
+import { Outlet, redirect, useNavigation } from "react-router";
+import { Navbar1 } from "~/components/navbar1";
+import { db } from "~/db";
+import { userNotification } from "../db/schema";
+import { and, eq, sql } from "drizzle-orm";
+import type { Route } from "./+types/appLayout";
+import { useLoaderData } from "react-router";
+import { getSessionSafe } from "~/lib/auth";
+import { cn } from "~/lib/utils";
+import { PwaInstallPrompt } from "~/components/pwa/PwaInstallPrompt";
+
+export async function loader({ request }: Route.LoaderArgs) {
+  const session = await getSessionSafe(request);
+
+
+  if (!session?.user) {
+    return { unreadCount : 0 }
+    //    throw redirect(`/sign-in?redirect=${new URL(request.url).pathname}`);
+  }
+
+  const [{ unreadCount }] = await db
+    .select({ unreadCount: sql<number>`COUNT(*)::int` })
+    .from(userNotification)
+    .where(and(
+      eq(userNotification.userId, session?.user.id as string),
+      eq(userNotification.read, false),
+    ));
+
+  return { unreadCount, currentUser: session?.user };
+}
+
+export default function AppLayout() {
+  const { unreadCount, currentUser } = useLoaderData<typeof loader>();
+   const navigation = useNavigation();
+  const isNavigating = navigation.state !== "idle";
+
+  return (
+    <div>
+      <div className="bg-background border-b-2 border-muted/50 px-4 md:px-12">
+        <Navbar1 unreadCount={unreadCount} currentUser={currentUser} />
+      </div>
+       <div
+        className={cn(
+          "transition-opacity duration-200",
+          isNavigating ? "opacity-60 pointer-events-none" : "opacity-100"
+        )}
+      >
+        <Outlet />
+      </div>
+      <PwaInstallPrompt /> 
+      
+    </div>
+  );
+}

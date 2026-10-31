@@ -1,0 +1,1 @@
+ALTER TABLE "student_profile" ALTER COLUMN "cover_image_url" SET DEFAULT 'https://yu7tr24azt.ufs.sh/f/StMcjRNdv9k09sR2mIfVQmW5w8uAlF3vE1kgYzn2ZIxOLfbj';

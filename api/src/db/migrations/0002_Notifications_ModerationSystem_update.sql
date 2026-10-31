@@ -1,0 +1,1 @@
+DROP INDEX "user_notification_unread_idx";
