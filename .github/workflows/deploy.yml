@@ -2,37 +2,59 @@ name: Build and Push to Docker Hub
 
 on:
   push:
-    branches: [ "main" ] # Triggers whenever you push code to the main branch
+    branches: [ "main" ]
 
 jobs:
-  build-and-push:
+  build-api:
     runs-on: ubuntu-latest
-
     steps:
-      # 1. Checkout your source code from GitHub onto the runner
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # 2. Log in to Docker Hub using your repository secrets
       - name: Log in to Docker Hub
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      # 3. Extract metadata (tags, labels) for Docker
-      - name: Extract Docker metadata
-        id: meta
+      - name: Extract metadata for API
+        id: meta-api
         uses: docker/metadata-action@v5
         with:
-          images: ${{ secrets.DOCKERHUB_USERNAME }}/your-app-name # Replace with your actual Docker Hub repo name
+          images: ${{ secrets.DOCKERHUB_USERNAME }}/my-api
 
-      # 4. Build and push the Docker image
-      - name: Build and push Docker image
+      - name: Build and push API container
         uses: docker/build-push-action@v5
         with:
-          context: .
-          file: ./Dockerfile # Path to your Dockerfile (adjust if it's nested)
+          context: ./api
+          file: ./api/Dockerfile
           push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
+          tags: ${{ steps.meta-api.outputs.tags }}
+          labels: ${{ steps.meta-api.outputs.labels }}
+
+  build-client:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Extract metadata for Client
+        id: meta-client
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ secrets.DOCKERHUB_USERNAME }}/my-client
+
+      - name: Build and push Client container
+        uses: docker/build-push-action@v5
+        with:
+          context: ./client
+          file: ./client/Dockerfile
+          push: true
+          tags: ${{ steps.meta-client.outputs.tags }}
+          labels: ${{ steps.meta-client.outputs.labels }}
